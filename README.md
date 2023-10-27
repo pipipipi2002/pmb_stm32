@@ -3,7 +3,7 @@ This project is an adaptation of the Bumblebee Autonomous System's Power Monitor
 
 This personal project aims to switch from STM32 CMSIS HAL to LibOpenCM3 library, as well as to implement other advanced feature such as CAN boot flashloader, error logging and storage, better graphics, RTOS and etc
 
-Another reason for this project is to learn Rust. The master branch shall be kept in C, while another branch will be in Rust
+Another reason for this project is to learn Rust. The master branch shall be kept in C, while another branch will be in Rust (to be added).
 
 ## Feature list / Wish list
 - Port over current status to LibOpenCM3
@@ -15,13 +15,13 @@ Another reason for this project is to learn Rust. The master branch shall be kep
 
 # Setup
 ```bash
-$ git clone <URL>
-$ git submodule init
-$ git submodule update
+git clone https://github.com/pipipipi2002/pmb_stm32
+git submodule init
+git submodule update
 
-$ cd libopencm3
-$ make
+cd libopencm3
+make
 
-$ cd ../app
-$ make
+cd ../app
+make
 ```
