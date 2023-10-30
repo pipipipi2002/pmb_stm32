@@ -21,8 +21,8 @@
 /* Define memory regions. */
 MEMORY
 {
-	rom 	 (rx)  : ORIGIN = 0x08000000, LENGTH = 32k        /* FLASH */
-	ram 	 (rwx) : ORIGIN = 0x20000000, LENGTH = 96k         /* SRAM */
+	rom 	 (rx)  : ORIGIN = 0x08000000, LENGTH = 128k        /* FLASH */
+	ram 	 (rwx) : ORIGIN = 0x20000000, LENGTH = 16k         /* SRAM */
 }
 
 /* Enforce emmition of the vector table. */

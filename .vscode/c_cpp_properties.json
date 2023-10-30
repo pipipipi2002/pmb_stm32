@@ -3,9 +3,10 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**"            ],
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/libopencm3/**s"],
             "defines": [
-                "STM32F7"
+                "STM32F0"
             ],
             "compilerPath": "/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/bin/arm-none-eabi-gcc",
             "cStandard": "c99",
