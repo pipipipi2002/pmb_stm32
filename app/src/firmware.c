@@ -5,6 +5,7 @@
 #include "firmware.h"
 #include "system.h"
 #include "uart.h"
+#include "logger.h"
 
 
 static void main_gpio_init(void);
@@ -65,7 +66,9 @@ int main(void) {
 
     while (1) {
         gpio_toggle(MAIN_NERROR_PORT, MAIN_NERROR_PIN);
-        uart1_write_string("Toggle on\r\n");
+        logger_printInfo("Toggle on");
+        logger_printSuccess("Toggled");
+        logger_printError("No error");
         system_delay_ms(1000);
     }
     return 0;
