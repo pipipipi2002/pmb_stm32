@@ -3,9 +3,9 @@
 
 #include "common_defines.h"
 
-void uart1_write_byte(uint8_t data);
-void uart1_write_bytes(uint8_t* data, const uint32_t length);
-void uart1_write_string(char* ptr);
+void uart1_writeByte(uint8_t data);
+void uart1_writeBytes(uint8_t* data, const uint32_t length);
+void uart1_writeString(char* ptr);
 void uart_init(void);
 void uart_deinit(void);
 

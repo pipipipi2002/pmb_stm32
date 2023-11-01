@@ -8,14 +8,14 @@
 #include "logger.h"
 
 
-static void main_gpio_init(void);
+static void main_gpioInit(void);
 
 // static void main_display_setup(void);
 // static void main_uart_debug_setup(void);
 // static void main_bq_setup(void);
 
 
-static void main_gpio_init(void) {
+static void main_gpioInit(void) {
     /* Enable clock on GPIOB, GPIOC */
     rcc_periph_clock_enable(RCC_GPIOA); 
     rcc_periph_clock_enable(RCC_GPIOB); 
@@ -28,7 +28,6 @@ static void main_gpio_init(void) {
      *      PA10    UART_RX
      * 
      */
-
     gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, MAIN_UART1_TX_PIN | MAIN_UART1_RX_PIN);
     gpio_set_af(GPIOA, GPIO_AF1, MAIN_UART1_TX_PIN | MAIN_UART1_RX_PIN);
 
@@ -61,7 +60,7 @@ static void main_gpio_init(void) {
 
 int main(void) {
     system_init();
-    main_gpio_init();
+    main_gpioInit();
     uart_init();
 
     while (1) {

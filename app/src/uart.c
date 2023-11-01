@@ -25,18 +25,18 @@ static void uart1_deinit(void) {
     rcc_periph_clock_disable(RCC_USART1);
 }
 
-void uart1_write_byte(uint8_t data) {
+void uart1_writeByte(uint8_t data) {
     usart_send_blocking(USART1, (uint16_t) data);
 }
 
-void uart1_write_bytes(uint8_t* data, const uint32_t length) {
+void uart1_writeBytes(uint8_t* data, const uint32_t length) {
     for (uint32_t i = 0;  i < length; i++) {
-        uart1_write_byte(data[i]);
+        uart1_writeByte(data[i]);
     }
 }
 
-void uart1_write_string(char* ptr) {
-    uart1_write_bytes((uint8_t *) ptr, strlen(ptr));
+void uart1_writeString(char* ptr) {
+    uart1_writeBytes((uint8_t *) ptr, strlen(ptr));
 }
 
 void uart_init(void) {

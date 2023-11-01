@@ -1,7 +1,7 @@
 #include "logger.h"
 #include "uart.h"
 
-#define UART_WRITE_STRING_FUNC(x)      (uart1_write_string(x))
+#define UART_WRITE_STRING_FUNC(x)      (uart1_writeString(x))
 
 void logger_printInfo(char* info) {
     UART_WRITE_STRING_FUNC("[INFO]: ");
@@ -16,7 +16,7 @@ void logger_printSuccess(char* info) {
 }
 
 void logger_printError(char* info) {
-    UART_WRITE_STRING_FUNC("[ERR]: ");
+    UART_WRITE_STRING_FUNC("[ERROR]: ");
     UART_WRITE_STRING_FUNC(info);
     UART_WRITE_STRING_FUNC("\r\n");
 }
