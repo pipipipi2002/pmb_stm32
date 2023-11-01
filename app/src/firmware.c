@@ -4,27 +4,39 @@
 
 #include "firmware.h"
 #include "system.h"
-#include "common_defines.h"
+#include "uart.h"
 
+
+static void main_gpio_init(void);
 
 // static void main_display_setup(void);
 // static void main_uart_debug_setup(void);
 // static void main_bq_setup(void);
 
-static void main_gpio_init(void);
-
 
 static void main_gpio_init(void) {
     /* Enable clock on GPIOB, GPIOC */
+    rcc_periph_clock_enable(RCC_GPIOA); 
     rcc_periph_clock_enable(RCC_GPIOB); 
     rcc_periph_clock_enable(RCC_GPIOC); 
 
     /**
+     * PORT A Setup
+     * USART1:
+     *      PA9     UART_TX
+     *      PA10    UART_RX
+     * 
+     */
+
+    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, MAIN_UART1_TX_PIN | MAIN_UART1_RX_PIN);
+    gpio_set_af(GPIOA, GPIO_AF1, MAIN_UART1_TX_PIN | MAIN_UART1_RX_PIN);
+
+    /**
      * PORT B Setup
-     * INPUT:
+     * DIGITAL_INPUT:
      *      PB13    BQ_ALERT1
      *      PB12    BQ_ALERT2
-     * OUTPUT:
+     * DIGITAL_OUTPUT:
      *      PB14    NERROR          ON
      */
     gpio_mode_setup(GPIOB, GPIO_MODE_INPUT, GPIO_PUPD_NONE, MAIN_BQ_ALERT1_PIN | MAIN_BQ_ALERT2_PIN);
@@ -33,9 +45,9 @@ static void main_gpio_init(void) {
 
     /**
      * PORT C Setup
-     * INPUT: 
+     * DIGITAL_INPUT: 
      *      PC7     REED_OFF
-     * OUTPUT:
+     * DIGITAL_OUTPUT:
      *      PC1     RELAY_ON            OFF
      *      PC3     PMOS_ON             OFF
      *      PC4     DISPLAY_RESET       OFF
@@ -49,9 +61,11 @@ static void main_gpio_init(void) {
 int main(void) {
     system_init();
     main_gpio_init();
+    uart_init();
 
     while (1) {
         gpio_toggle(MAIN_NERROR_PORT, MAIN_NERROR_PIN);
+        uart1_write_string("Toggle on\r\n");
         system_delay_ms(1000);
     }
     return 0;
