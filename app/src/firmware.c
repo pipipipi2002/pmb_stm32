@@ -32,14 +32,13 @@ static void main_canInit(void) {
     logger_printInfo("CAN Init");
 
     /* CAN1 Init
-     * ttcm, awum, nart, rflm, txfp : OFF
-     * abom : ON
-     * Speed: 1Mbps
-     *  SJW: 1TQ
-     *  TS1: 13TQ
-     *  TS2: 2TQ
-     *  BRP: 3 (of AHB, 48MHz)
-     * Silent, Loopback : OFF
+     * OFF  : ttcm, awum, nart, rflm, txfp, Silent, Loopback
+     * ON   : abom
+     * Rate : 1Mbps
+     * - SJW : 1TQ
+     * - TS1 : 13TQ
+     * - TS2 : 2TQ
+     * - BRP : 3 (of AHB, 48MHz)
      */
     can_init(BX_CAN1_BASE, false, true, false, false, false, false, CAN_BTR_SJW_1TQ, CAN_BTR_TS1_13TQ, CAN_BTR_TS2_2TQ, 3, false, false);
     
