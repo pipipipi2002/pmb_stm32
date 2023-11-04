@@ -6,20 +6,18 @@
 #include "firmware.h"
 #include "system.h"
 #include "uart.h"
+#include "can.h"
 #include "logger.h"
+
 
 static void PMB_commonGpioInit(void);
 static uint8_t PMB_canInit(void);
-
-// static void main_display_setup(void);
-// static void main_uart_debug_setup(void);
-// static void main_bq_setup(void);
 
 int main(void) {
     PMB_system_init();    
     PMB_uart_init();
     PMB_commonGpioInit();
-    while(PMB_canInit()) {
+    while(PMB_can_init()) {
         PMB_system_delayMs(1000);
     }
     uint8_t data[] = {0xAA, 0xBB, 0xCC, 0xDD};
@@ -39,48 +37,6 @@ int main(void) {
     return 0;
 }
 
-static uint8_t PMB_canInit(void) {
-    PMB_logger_printInfo("CAN Init");
-    
-    rcc_periph_clock_enable(RCC_CAN);
-    can_reset(BX_CAN1_BASE);
-
-    /* CAN1 Init
-     * OFF  : ttcm, awum, nart, rflm, txfp, Silent, Loopback
-     * ON   : abom
-     * Rate : 1Mbps
-     * - SJW : 1TQ
-     * - TS1 : 13TQ
-     * - TS2 : 2TQ
-     * - BRP : 3 (of AHB, 48MHz)
-     */
-    uint32_t ret = can_init(BX_CAN1_BASE, false, true, false, false, false, false, CAN_BTR_SJW_1TQ, CAN_BTR_TS1_13TQ, CAN_BTR_TS2_2TQ, 3, false, false);
-    if (ret == 1) {
-        PMB_logger_printError("CAN init failed");
-        return 1;
-    }
-    
-	/* ID 0 ~ 15 goes to FIFO0
-	 * Filter configuration:
-	 * ID: 		0b00001111
-	 * Mask:	0b11110000
-	 * Effect:  Accept all IDs below 16
-	 */
-    can_filter_id_mask_16bit_init(1, 0x0F, 0xF0, 0x0F, 0xF0, CAN_FIFO0, true);
-
-    /* ID 16 ~  goes to FIFO1
-	 * Filter configuration:
-	 * ID: 		0x00
-	 * Mask:	0x00
-	 * Effect:  Accept all. But since 0~15 will go into filter bank with higher priority,
-	 * only 16~ will go here
-	 */
-    can_filter_id_mask_16bit_init(2, 0x00, 0x00, 0x00, 0x00, CAN_FIFO1, true);
-    PMB_logger_printSuccess("CAN Init Sucessful");
-    return 0;
-};
-
-
 static void PMB_commonGpioInit(void) {
     PMB_logger_printInfo("Common GPIO Init");
     /**
@@ -93,9 +49,7 @@ static void PMB_commonGpioInit(void) {
      *      PA12    CAN_TX
      */
 
-    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, PMB_CAN_RX_PIN | PMB_CAN_TX_PIN);
-    gpio_set_af(GPIOA, GPIO_AF4, PMB_CAN_TX_PIN | PMB_CAN_RX_PIN);
-    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_HIGH, PMB_CAN_RX_PIN | PMB_CAN_TX_PIN);
+
 
     /**
      * PORT B Setup

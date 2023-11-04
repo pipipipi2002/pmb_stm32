@@ -58,6 +58,7 @@ OBJS		+= $(SRC_DIR)/$(BINARY).o
 OBJS		+= $(SRC_DIR)/system.o
 OBJS		+= $(SRC_DIR)/uart.o
 OBJS		+= $(SRC_DIR)/logger.o
+OBJS		+= $(SRC_DIR)/can.o
 # OBJS		+= $(SRC_DIR)/bootloader.o
 # OBJS		+= $(SRC_DIR)/timer.o
 # OBJS		+= $(SRC_DIR)/info.o
