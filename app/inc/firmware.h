@@ -2,6 +2,9 @@
 #define INC_PMB_FIRMWARE_H
 
 #include "common_defines.h"
+#include "can.h"
+#include "gpio.h"
+#include "logger.h"
 
 #define PMB_BAUDRATE               (115200)
 
