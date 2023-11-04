@@ -5,8 +5,8 @@
 #include "system.h"
 #include "common_defines.h"
 
-static void system_rccInit(void);
-static void system_systickInit(void);
+static void PMB_system_rccInit(void);
+static void PMB_system_systickInit(void);
 
 static volatile uint64_t system_ticks = 0;
 
@@ -18,27 +18,32 @@ void sys_tick_handler(void) {
     system_ticks++;
 }
 
-static void system_rccInit(void) {
+static void PMB_system_rccInit(void) {
+    // Enable clock gating to GPIO PORT
+    rcc_periph_clock_enable(RCC_GPIOA); 
+    rcc_periph_clock_enable(RCC_GPIOB); 
+    rcc_periph_clock_enable(RCC_GPIOC); 
+    
     /* Set System frequency to 48 MHz, with HSI clock */
     rcc_clock_setup_in_hsi48_out_48mhz();
 }
 
-static void system_systickInit(void) {
+static void PMB_system_systickInit(void) {
     systick_set_frequency(SYSTICK_FREQ, rcc_ahb_frequency);
     systick_counter_enable();
     systick_interrupt_enable();
 }
 
-uint64_t system_getTicks(void) {
+uint64_t PMB_system_getTicks(void) {
     return system_ticks;
 }
 
-void system_delay_ms(uint64_t time_ms) {
-    uint64_t end_time = system_getTicks() + time_ms;
-    while (system_getTicks() < end_time);
+void PMB_system_delayMs(uint64_t time_ms) {
+    uint64_t end_time = PMB_system_getTicks() + time_ms;
+    while (PMB_system_getTicks() < end_time);
 }
 
-void system_init(void){
-    system_rccInit();
-    system_systickInit();
+void PMB_system_init(void){
+    PMB_system_rccInit();
+    PMB_system_systickInit();
 }
