@@ -1,5 +1,3 @@
-#include <libopencm3/cm3/systick.h>
-#include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/can.h>
 
@@ -8,6 +6,7 @@
 #include "uart.h"
 #include "can.h"
 #include "logger.h"
+#include "gpio.h"
 
 int main(void) {
     PMB_system_init();    
