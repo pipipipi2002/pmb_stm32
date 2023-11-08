@@ -2,7 +2,9 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 
+#include "can.h"
 #include "firmware.h"
+#include "logger.h"
 
 uint8_t PMB_can_init(void) {
     PMB_logger_printInfo("CAN Init");

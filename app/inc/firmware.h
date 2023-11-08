@@ -2,11 +2,7 @@
 #define INC_PMB_FIRMWARE_H
 
 #include "common_defines.h"
-#include "firmware.h"
-#include "system.h"
-#include "uart.h"
-#include "can.h"
-#include "logger.h"
+
 
 #define PMB_BAUDRATE               (115200)
 
@@ -16,6 +12,10 @@
 #define PMB_UART1_PORT             (GPIOA)
 #define PMB_UART1_TX_PIN           (GPIO9)
 #define PMB_UART1_RX_PIN           (GPIO10)
+
+#define PMB_I2C1_PORT              (GPIOB)
+#define PMB_I2C1_SCL_PIN           (GPIO6)
+#define PMB_I2C1_SDA_PIN           (GPIO7)
 
 #define PMB_CAN_PORT               (GPIOA)
 #define PMB_CAN_RX_PIN             (GPIO11)

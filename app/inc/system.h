@@ -1,6 +1,8 @@
 #ifndef INC_PMB_SYSTEM_H
 #define INC_PMB_SYSTEM_H
 
+#include "common_defines.h"
+
 #define SYSTICK_FREQ        (1000)      // trigger every 1ms
 
 void PMB_system_init(void);

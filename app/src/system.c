@@ -3,7 +3,6 @@
 #include <libopencm3/stm32/rcc.h>
 
 #include "system.h"
-#include "common_defines.h"
 
 static void PMB_system_rccInit(void);
 static void PMB_system_systickInit(void);
@@ -26,6 +25,10 @@ static void PMB_system_rccInit(void) {
     
     /* Set System frequency to 48 MHz, with HSI clock */
     rcc_clock_setup_in_hsi48_out_48mhz();
+
+    /* I2C Clock source */
+    rcc_osc_on(RCC_HSI);
+    rcc_wait_for_osc_ready(RCC_HSI);
 }
 
 static void PMB_system_systickInit(void) {

@@ -1,5 +1,6 @@
 #include <libopencm3/stm32/gpio.h>
 
+#include "gpio.h"
 #include "logger.h"
 #include "firmware.h"
 

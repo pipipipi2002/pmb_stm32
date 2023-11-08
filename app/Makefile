@@ -60,12 +60,8 @@ OBJS		+= $(SRC_DIR)/uart.o
 OBJS		+= $(SRC_DIR)/logger.o
 OBJS		+= $(SRC_DIR)/can.o
 OBJS		+= $(SRC_DIR)/gpio.o
-# OBJS		+= $(SRC_DIR)/bootloader.o
-# OBJS		+= $(SRC_DIR)/timer.o
-# OBJS		+= $(SRC_DIR)/info.o
-# OBJS		+= $(SHARED_SRC_DIR)/core/system.o
-# OBJS		+= $(SHARED_SRC_DIR)/core/uart.o
-# OBJS		+= $(SHARED_SRC_DIR)/core/ring-buffer.o
+OBJS		+= $(SRC_DIR)/ADS1115/ADS1115.o
+OBJS		+= $(SRC_DIR)/i2c.o
 
 ###############################################################################
 # C flags
