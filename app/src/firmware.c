@@ -11,12 +11,14 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "ADS1115/ADS1115.h"
+#include "retarget.h"
 
 float PMB_getPressure(void);
 
 int main(void) {
     PMB_system_init();    
     PMB_uart_init();
+    retarget_init();
     PMB_gpio_init();
     while(PMB_can_init()) PMB_system_delayMs(1000);
     PMB_i2c_init();
@@ -28,16 +30,16 @@ int main(void) {
         
         volatile float pressure = PMB_getPressure();
 
-        PMB_logger_printInfo("Sending CAN");
+        printf("Sending CAN");
         volatile uint32_t data_size = sizeof(data);
         volatile int8_t res = can_transmit(BX_CAN1_BASE, 0x1, false, false, data_size, data);
         if (res >= 0) {
-            PMB_logger_printSuccess("CAN: Data sent");
+            printf("CAN: Data sent");
         } else {
-            PMB_logger_printError("CAN: Failed to send");
+            printf("CAN: Failed to send");
         }
         
-        PMB_system_delayMs(5000);
+        PMB_system_delayMs(1000);
     }
     return 0;
 }

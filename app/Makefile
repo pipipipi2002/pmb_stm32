@@ -62,6 +62,7 @@ OBJS		+= $(SRC_DIR)/can.o
 OBJS		+= $(SRC_DIR)/gpio.o
 OBJS		+= $(SRC_DIR)/ADS1115/ADS1115.o
 OBJS		+= $(SRC_DIR)/i2c.o
+OBJS		+= $(SRC_DIR)/retarget.o
 
 ###############################################################################
 # C flags

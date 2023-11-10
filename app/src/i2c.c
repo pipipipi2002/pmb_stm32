@@ -18,6 +18,7 @@ void PMB_i2c_init(void) {
 
     /* I2C Register Configuration */
     i2c_peripheral_disable(I2C1);
+    
     i2c_set_speed(I2C1, i2c_speed_sm_100k, 8); // HSI8 is 8 MegaHertz
     i2c_set_7bit_addr_mode(I2C1);
     i2c_enable_analog_filter(I2C1);

@@ -5,9 +5,11 @@
 #include "uart.h"
 #include "firmware.h"
 
+
 static void PMB_uart1_init(void);
 static void PMB_uart1_gpioInit(void);
 static void PMB_uart1_deinit(void);
+
 
 static void PMB_uart1_init(void) {
     rcc_periph_clock_enable(RCC_USART1);
@@ -35,14 +37,16 @@ void PMB_uart1_writeByte(uint8_t data) {
     usart_send_blocking(USART1, (uint16_t) data);
 }
 
-void PMB_uart1_writeBytes(uint8_t* data, const uint32_t length) {
-    for (uint32_t i = 0;  i < length; i++) {
+uint32_t PMB_uart1_writeBytes(uint8_t* data, const uint32_t len) {
+    uint32_t i = 0;
+    for (;  i < len; i++) {
         PMB_uart1_writeByte(data[i]);
     }
+    return i;
 }
 
-void PMB_uart1_writeString(char* ptr) {
-    PMB_uart1_writeBytes((uint8_t *) ptr, strlen(ptr));
+void PMB_uart1_readByte(uint8_t* data) {
+    *data = (uint8_t) usart_recv_blocking(USART1); 
 }
 
 void PMB_uart_init(void) {
