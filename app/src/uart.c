@@ -33,13 +33,13 @@ static void PMB_uart1_deinit(void) {
     rcc_periph_clock_disable(RCC_USART1);
 }
 
-void PMB_uart1_writeByte(uint8_t data) {
-    usart_send_blocking(USART1, (uint16_t) data);
+void PMB_uart1_writeByte(uint8_t* data) {
+    usart_send_blocking(USART1, (uint16_t) *data);
 }
 
 uint32_t PMB_uart1_writeBytes(uint8_t* data, const uint32_t len) {
-    uint32_t i = 0;
-    for (;  i < len; i++) {
+    uint32_t i;
+    for (i = 0;  i < len; i++) {
         PMB_uart1_writeByte(data[i]);
     }
     return i;

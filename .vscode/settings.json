@@ -4,6 +4,16 @@
         "systick.h": "c",
         "vector.h": "c",
         "nvic.h": "c",
-        "common_defines.h": "c"
-    }
+        "common_defines.h": "c",
+        "usart.h": "c",
+        "memorymap.h": "c",
+        "stdint.h": "c",
+        "string.h": "c",
+        "can.h": "c",
+        "gpio.h": "c",
+        "firmware.h": "c",
+        "i2c.h": "c",
+        "i2c_common_v2.h": "c"
+    },
+    "cortex-debug.variableUseNaturalFormat": false
 }

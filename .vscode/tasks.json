@@ -16,7 +16,11 @@
                 "cwd": "app"
             },
             "command": "make bin",
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$gcc",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }
