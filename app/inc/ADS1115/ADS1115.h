@@ -13,17 +13,13 @@
 // #include "stm32f0xx_hal.h"			//systick, delay,...
 // #include "stm32f0xx_hal_i2c.h"		//can library
 // #include "stm32f0xx_hal_cortex.h"	    //nvic
-#include <stdio.h>
-#include <stdlib.h>
-#include <libopencm3/stm32/i2c.h>
+
 #include "common_defines.h"
-#include "system.h"
 
 /*=========================================================================
     I2C ADDRESS/BITS
     -----------------------------------------------------------------------*/
-    // #define ADS1115_ADDRESS  				 (0x90)    // 1001 000 (ADDR = GND)
-    #define ADS1115_ADDRESS  				 (0x48)    // 1001 000 (ADDR = GND)
+    #define ADS1115_ADDRESS  				 (0x48)    // 1001 000 
 /*=========================================================================*/
 
 /*=========================================================================
@@ -106,10 +102,6 @@
     #define ADS1115_REG_CONFIG_CQUE_4CONV   (0x0002)  // Assert ALERT/RDY after four conversions
     #define ADS1115_REG_CONFIG_CQUE_NONE    (0x0003)  // Disable the comparator and put ALERT/RDY in high state (default)
 /*=========================================================================*/
-
-
-
-// extern I2C_HandleTypeDef hi2c1; // STM HAL 
 
 void ADS_WriteRegister(uint8_t i2cAddress, uint8_t reg, uint16_t value);
 uint16_t ADS_ReadRegister(uint8_t i2cAddress, uint8_t reg);

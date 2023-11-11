@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <libopencm3/stm32/i2c.h>
+
+#include "system.h"
 #include "ADS1115/ADS1115.h"
 
 uint16_t perm_config;
@@ -14,9 +19,7 @@ void ADS_WriteRegister(uint8_t i2cAddress, uint8_t reg, uint16_t value)
 	ADS_dataW[0] = (uint8_t)reg;
 	ADS_dataW[1] = (uint8_t)(value >> 8);
 	ADS_dataW[2] = (uint8_t)(value & 0xFF);
-	// HAL_I2C_Master_Transmit(&hi2c1, i2cAddress, ADS_dataW, 3, 10); // STM32 HAL
   i2c_transfer7(I2C1, i2cAddress, ADS_dataW, 3, 0, 0);
-
 }
 /**************************************************************************/
 /*!
@@ -25,9 +28,7 @@ void ADS_WriteRegister(uint8_t i2cAddress, uint8_t reg, uint16_t value)
 /**************************************************************************/
 uint16_t ADS_ReadRegister(uint8_t i2cAddress, uint8_t reg)
 {
-	ADS_dataW[0] = ADS1115_REG_POINTER_CONVERT;
-	// HAL_I2C_Master_Transmit(&hi2c1, i2cAddress, ADS_dataW, 1, 10);
-	// HAL_I2C_Master_Receive(&hi2c1, i2cAddress, &ADS_dataR[0], 2, 10);
+	ADS_dataW[0] = reg;
   i2c_transfer7(I2C1, i2cAddress, ADS_dataW, 1, ADS_dataR, 2);
   
 	return ( (ADS_dataR[0] << 8) | ADS_dataR[1]);
@@ -39,7 +40,8 @@ uint16_t ADS_ReadRegister(uint8_t i2cAddress, uint8_t reg)
 */
 /**************************************************************************/
 void ADS_Init() {
-//	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+  // No setup needed
+  return;
 }
 
 /**************************************************************************/
@@ -127,13 +129,16 @@ uint16_t ADS_ReadADC_SingleEnded(uint8_t channel)
   ADS_WriteRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONFIG, config);
 
   // Wait for the conversion to complete
-//  HAL_Delay(ADS1115_CONVERSIONDELAY);
-  for (int i = 0; i<64; i++) {
+  PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
 
-  }
+  // Check whether conversion still ongoing
+  uint16_t res;
+  do {
+    PMB_system_delayMs(10);
+    res = ADS_ReadRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONFIG);
+  } while ((res & ADS1115_REG_CONFIG_OS_MASK) == ADS1115_REG_CONFIG_OS_BUSY);
 
   // Read the conversion results
-  // Shift 12-bit results right 4 bits for the ADS1115
   return ADS_ReadRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONVERT) >> ADS1115_BITSHIFT;
 }
 

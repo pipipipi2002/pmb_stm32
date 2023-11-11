@@ -17,7 +17,7 @@ float PMB_getPressure(void);
 static void setup(void);
 
 int main(void) {
-
+    setup();
 
     uint8_t data[] = {0xAA, 0xBB, 0xCC, 0xDD};
 
