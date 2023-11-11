@@ -28,13 +28,10 @@ void retarget_init(void) {
 }
 
 /**
- * @brief 
+ * @brief overwrite for printf purposes
  * @details To print float add "-u _printf_float" to LD_FLAGS
  * 
- * @param fd 
- * @param ptr 
- * @param len 
- * @return int 
+ * @return int Bytes written
  */
 int _write(int fd, char* ptr, int len) {
     int i;

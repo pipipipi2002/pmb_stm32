@@ -14,14 +14,10 @@
 #include "retarget.h"
 
 float PMB_getPressure(void);
+static void setup(void);
 
 int main(void) {
-    PMB_system_init();    
-    PMB_uart_init();
-    retarget_init();
-    PMB_gpio_init();
-    while(PMB_can_init()) PMB_system_delayMs(1000);
-    PMB_i2c_init();
+
 
     uint8_t data[] = {0xAA, 0xBB, 0xCC, 0xDD};
 
@@ -43,6 +39,15 @@ int main(void) {
         PMB_system_delayMs(3000);
     }
     return 0;
+}
+
+static void setup(void) {
+    PMB_system_init();    
+    PMB_uart_init();
+    retarget_init();
+    PMB_gpio_init();
+    while(PMB_can_init()) PMB_system_delayMs(1000);
+    PMB_i2c_init();
 }
 
 float PMB_getPressure(void) {
