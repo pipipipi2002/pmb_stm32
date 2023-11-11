@@ -11,4 +11,6 @@
 - Port Display library
 - Complete CAN library
 
-    
+## Advanced Features
+- RTOS
+- LGVL
