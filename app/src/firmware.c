@@ -29,17 +29,18 @@ int main(void) {
         gpio_toggle(PMB_NERROR_PORT, PMB_NERROR_PIN);
         
         volatile float pressure = PMB_getPressure();
+        logger_printInfo("Pressure: %f", pressure);
 
-        printf("Sending CAN");
-        volatile uint32_t data_size = sizeof(data);
+        uint32_t data_size = sizeof(data);
+        logger_printInfo("Sending CAN message of size: %d", data_size);
         volatile int8_t res = can_transmit(BX_CAN1_BASE, 0x1, false, false, data_size, data);
         if (res >= 0) {
-            printf("CAN: Data sent");
+            logger_printInfo("CAN: Data sent");
         } else {
-            printf("CAN: Failed to send");
+            logger_printInfo("CAN: Failed to send");
         }
         
-        PMB_system_delayMs(1000);
+        PMB_system_delayMs(3000);
     }
     return 0;
 }

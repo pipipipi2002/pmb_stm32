@@ -25,6 +25,7 @@ ARCH_FLAGS	= -mthumb -mcpu=cortex-m0
 LDSCRIPT = linkerscript.ld
 LDLIBS		+= -l$(LIBNAME)
 LDFLAGS		+= -L$(OPENCM3_DIR)/lib
+LDFLAGS		+= -u _printf_float
 
 ###############################################################################
 # Includes

@@ -5,7 +5,8 @@
 
 void PMB_uart1_writeByte(uint8_t data);
 uint32_t PMB_uart1_writeBytes(uint8_t* data, const uint32_t length);
-void PMB_uart1_readByte(uint8_t* data);
+uint8_t PMB_uart1_readByte(void);
+uint32_t PMB_uart1_readBytes(uint8_t* data, const uint32_t len);
 void PMB_uart_init(void);
 void PMB_uart_deinit(void);
 

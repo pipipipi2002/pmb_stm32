@@ -5,7 +5,7 @@
 #include "firmware.h"
 
 void PMB_gpio_init(void) {
-    PMB_logger_printInfo("GPIO Init");
+    logger_printInfo("GPIO Init");
 
     /**
      * PORT B Setup
@@ -33,5 +33,5 @@ void PMB_gpio_init(void) {
     gpio_mode_setup(GPIOC, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PMB_RELAY_ON_PIN | PMB_PMOS_ON_GPIO_PIN | PMB_DISPLAY_RESET_PIN);
     gpio_clear(GPIOC, PMB_RELAY_ON_PIN | PMB_PMOS_ON_GPIO_PIN| PMB_DISPLAY_RESET_PIN); 
 
-    PMB_logger_printSuccess("GPIO Init successful");
+    logger_printSuccess("GPIO Init successful");
 }

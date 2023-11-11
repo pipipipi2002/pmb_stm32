@@ -7,7 +7,7 @@
 #include "logger.h"
 
 uint8_t PMB_can_init(void) {
-    PMB_logger_printInfo("CAN Init");
+    logger_printInfo("CAN Init");
 
     /* Initialise CAN GPIO ports */
     gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, PMB_CAN_RX_PIN | PMB_CAN_TX_PIN);
@@ -37,7 +37,7 @@ uint8_t PMB_can_init(void) {
         false);             // Silent
 
     if (ret == 1) {
-        PMB_logger_printError("CAN init failed");
+        logger_printError("CAN init failed");
         return 1;
     }
     
@@ -58,6 +58,6 @@ uint8_t PMB_can_init(void) {
 	 */
     can_filter_id_mask_16bit_init(2, 0x00, 0x00, 0x00, 0x00, CAN_FIFO1, true);
     
-    PMB_logger_printSuccess("CAN Init Sucessful");
+    logger_printSuccess("CAN Init Sucessful");
     return 0;
 };

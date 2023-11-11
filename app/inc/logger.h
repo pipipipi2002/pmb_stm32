@@ -1,8 +1,8 @@
-#ifndef INC_PMB_LOGGER_H
-#define INC_PMB_LOGGER_H
+#ifndef INC_LOGGER_H
+#define INC_LOGGER_H
 
-void PMB_logger_printInfo(char* info);
-void PMB_logger_printSuccess(char* info);
-void PMB_logger_printError(char* info);
+void logger_printInfo(const char* fmt, ...);
+void logger_printSuccess(const char* fmt, ...);
+void logger_printError(const char* fmt, ...);
 
-#endif // INC_PMB_LOOGER_H
+#endif // INC_LOGGER_H

@@ -2,22 +2,29 @@
 #include "uart.h"
 
 #include <stdio.h>
+#include <stdarg.h>
 // #define UART_WRITE_STRING_FUNC(x)      (PMB_uart1_writeString(x))
 
-void PMB_logger_printInfo(char* info) {
-printf("[INFO]: ");
-printf(info);
-printf("\r\n");
+void logger_printInfo(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    printf("[INFO]: ");
+    vprintf(fmt, args);
+    printf("\n\r");
 }
 
-void PMB_logger_printSuccess(char* info) {
-printf("[OK]: ");
-printf(info);
-printf("\r\n");
+void logger_printSuccess(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    printf("[OK]: ");
+    vprintf(fmt, args);
+    printf("\n\r");
 }
 
-void PMB_logger_printError(char* info) {
-printf("[ERROR]: ");
-printf(info);
-printf("\r\n");
+void logger_printError(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    printf("[ERROR]: ");
+    vprintf(fmt, args);
+    printf("\n\r");
 }

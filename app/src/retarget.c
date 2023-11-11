@@ -27,11 +27,19 @@ void retarget_init(void) {
     setvbuf(stdout, NULL, _IONBF, 0);
 }
 
+/**
+ * @brief 
+ * @details To print float add "-u _printf_float" to LD_FLAGS
+ * 
+ * @param fd 
+ * @param ptr 
+ * @param len 
+ * @return int 
+ */
 int _write(int fd, char* ptr, int len) {
     int i;
     if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
-		for (i = 0; i < len; i++)
-			usart_send_blocking(USART1, ptr[i]);
+        i = PMB_uart1_writeBytes((uint8_t *) ptr, len);
 		return i;    
     }
     errno = EBADF;
@@ -39,9 +47,10 @@ int _write(int fd, char* ptr, int len) {
 }
 
 int _read (int fd, char *ptr, int len) {
+    int i;
     if (fd == STDIN_FILENO) {
-        PMB_uart1_readByte((uint8_t*) ptr);
-        return 1;
+        i = PMB_uart1_readBytes((uint8_t*) ptr, len);
+        return i;
     }
     errno = EBADF;
     return -1;
