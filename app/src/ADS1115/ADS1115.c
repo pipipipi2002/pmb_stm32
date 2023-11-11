@@ -185,7 +185,6 @@ int16_t ADS_ReadADC_Differential_0_1()
   ADS_WriteRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONFIG, config);
 
   // Wait for the conversion to complete
-  // HAL_Delay(ADS1115_CONVERSIONDELAY);
   PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
 
   // Read the conversion results
@@ -224,7 +223,6 @@ int16_t ADS_ReadADC_Differential_2_3()
   ADS_WriteRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONFIG, config);
 
   // Wait for the conversion to complete
-  // HAL_Delay(ADS1115_CONVERSIONDELAY);
   PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
 
   // Shift 12-bit results right 4 bits for the ADS1115
@@ -283,7 +281,6 @@ int16_t ADS_GetLastConversionResults()
 {
 
   // Wait for the conversion to complete
-  // HAL_Delay(ADS1115_CONVERSIONDELAY);
   PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
 
   // Read the conversion results
