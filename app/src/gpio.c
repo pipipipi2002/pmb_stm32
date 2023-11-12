@@ -1,11 +1,11 @@
 #include <libopencm3/stm32/gpio.h>
 
 #include "gpio.h"
-#include "logger.h"
+#include "log.h"
 #include "firmware.h"
 
 void PMB_gpio_init(void) {
-    logger_printInfo("GPIO Init");
+    log_pInfo("GPIO Init");
 
     /**
      * PORT B Setup
@@ -33,5 +33,5 @@ void PMB_gpio_init(void) {
     gpio_mode_setup(GPIOC, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PMB_RELAY_ON_PIN | PMB_PMOS_ON_GPIO_PIN | PMB_DISPLAY_RESET_PIN);
     gpio_clear(GPIOC, PMB_RELAY_ON_PIN | PMB_PMOS_ON_GPIO_PIN| PMB_DISPLAY_RESET_PIN); 
 
-    logger_printSuccess("GPIO Init successful");
+    log_pSuccess("GPIO Init successful");
 }

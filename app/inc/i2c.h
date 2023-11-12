@@ -3,6 +3,6 @@
 
 #include "common_defines.h"
 
-void PMB_i2c_init(void);
+bool PMB_i2c_init(void);
 
 #endif // INC_I2C_H

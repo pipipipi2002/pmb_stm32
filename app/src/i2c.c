@@ -4,8 +4,11 @@
 
 #include "i2c.h"
 #include "firmware.h"
+#include "log.h"
 
-void PMB_i2c_init(void) {
+bool PMB_i2c_init(void) {
+    log_pInfo("I2C Init");
+
     /* GPIO configuration */
     gpio_mode_setup(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, PMB_I2C1_SCL_PIN | PMB_I2C1_SDA_PIN);
     gpio_set_af(GPIOB, GPIO_AF1, PMB_I2C1_SCL_PIN | PMB_I2C1_SDA_PIN);
@@ -25,4 +28,6 @@ void PMB_i2c_init(void) {
     i2c_enable_stretching(I2C1);
 
     i2c_peripheral_enable(I2C1);
+    log_pSuccess("I2C Init Completed");
+    return true;
 }

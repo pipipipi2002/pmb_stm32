@@ -4,10 +4,10 @@
 
 #include "can.h"
 #include "firmware.h"
-#include "logger.h"
+#include "log.h"
 
-uint8_t PMB_can_init(void) {
-    logger_printInfo("CAN Init");
+bool PMB_can_init(void) {
+    log_pInfo("CAN Init");
 
     /* Initialise CAN GPIO ports */
     gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, PMB_CAN_RX_PIN | PMB_CAN_TX_PIN);
@@ -37,8 +37,8 @@ uint8_t PMB_can_init(void) {
         false);             // Silent
 
     if (ret == 1) {
-        logger_printError("CAN init failed");
-        return 1;
+        log_pError("CAN init failed");
+        return false;
     }
     
 	/* ID 0 ~ 15 goes to FIFO0
@@ -58,6 +58,6 @@ uint8_t PMB_can_init(void) {
 	 */
     can_filter_id_mask_16bit_init(2, 0x00, 0x00, 0x00, 0x00, CAN_FIFO1, true);
     
-    logger_printSuccess("CAN Init Sucessful");
-    return 0;
+    log_pSuccess("CAN Init Sucessful");
+    return true;
 };

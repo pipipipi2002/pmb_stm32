@@ -58,10 +58,10 @@ CSTD		?= -std=c99
 OBJS		+= $(SRC_DIR)/$(BINARY).o
 OBJS		+= $(SRC_DIR)/system.o
 OBJS		+= $(SRC_DIR)/uart.o
-OBJS		+= $(SRC_DIR)/logger.o
+OBJS		+= $(SRC_DIR)/log.o
 OBJS		+= $(SRC_DIR)/can.o
 OBJS		+= $(SRC_DIR)/gpio.o
-OBJS		+= $(SRC_DIR)/ADS1115/ADS1115.o
+OBJS		+= $(SRC_DIR)/ADS1115.o
 OBJS		+= $(SRC_DIR)/i2c.o
 OBJS		+= $(SRC_DIR)/retarget.o
 
