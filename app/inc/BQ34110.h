@@ -6,12 +6,12 @@
 #include <string.h>
 #include <inttypes.h>
 #include <stdio.h>
-#include "stm32f0xx_hal.h"
-#include "stm32f0xx_hal_i2c.h"
-#include "stm32f0xx_hal_cortex.h"
-#include "../pmb_define.h"
 
-#define BQ34110_ADDRESS 0xAA
+#define BQ_BATT_CAPACITY			(15000UL)		// mAH capacity
+#define BQ_NO_OF_CELL				(4UL)			// Battery Cell Count
+#define BQ_VOLTAGE_DIVIDER			(19000UL) 		// Maximum expected voltage
+
+#define BQ34110_ADDRESS 0x55		// ADDR: 1010101
 /*=========================================================================
     DATA FLASH ADDRESS
     -----------------------------------------------------------------------*/
@@ -42,9 +42,6 @@
 	#define CEDV_CONFIG_FIXED_EDV0_BIT  5
 	#define OP_STATUS_EDV2_BIT 			3
 	#define OP_STATUS_VDQ_BIT 			4
-
-
-
 
 /*=========================================================================*/
 
@@ -103,14 +100,12 @@
 #define BQ34110_CNTL_PIN_VEN_RESET  0x6D
 /*=========================================================================*/
 
-extern I2C_HandleTypeDef hi2c1;
-
 uint8_t BQ_dataW[10];
 uint8_t BQ_dataR[10];
 uint8_t keys[8];
 
 // Test function
-void BQ_test();
+void BQ_test(void);
 
 // Functions to read/write BQ internal registers and flash.
 uint32_t BQ_ReadRegister(uint8_t add, uint8_t len);
@@ -119,47 +114,51 @@ int BQ_ReadControl(uint8_t cntl_data);
 void BQ_WriteMAC(uint16_t cntl_data);
 uint32_t BQ_ReadMAC(uint16_t cntl_data, int bytes);
 uint32_t BQ_ReadFlash(uint16_t addr, uint8_t bytes);
-void BQ_WriteFlash(uint16_t addr, uint8_t bytes, uint16_t flashDataW) ;
-void BQ_CheckSum(uint16_t addr, uint8_t bytes, uint16_t flashDataW) ;
+void BQ_WriteFlash(uint16_t addr, uint8_t bytes, uint16_t flashDataW);
+void BQ_SendCheckSum(uint16_t addr, uint32_t flashDataW);
+uint8_t BQ_CalculateCheckSum(uint16_t addr, uint32_t flashData);
+
 
 // Telemetry data from BQ 
-int BQ_AnalogCount();
-float BQ_GetTemp();
-uint16_t BQ_GetBattStatus();
-uint32_t BQ_GetVoltage();
-uint32_t BQ_GetRawVoltage();
-int16_t BQ_GetCurrent();
-int16_t BQ_GetRawCurrent();
-uint8_t BQ_GetRSOC();
-uint8_t BQ_GetSOH();
-int BQ_GetFullCapacity();
-int BQ_GetRemainingCapacity();
+int BQ_AnalogCount(void);
+float BQ_GetTemp(void);
+uint16_t BQ_GetBattStatus(void);
+uint16_t BQ_GetVoltage(void);
+uint16_t BQ_GetRawVoltage(void);
+int16_t BQ_GetCurrent(void);
+int16_t BQ_GetRawCurrent(void);
+uint8_t BQ_GetRSOC(void);
+uint8_t BQ_GetSOH(void);
+int BQ_GetFullCapacity(void);
+int BQ_GetRemainingCapacity(void);
 
 // Initialisation and Calibration command for BQ
-void BQ_Reset();
-void BQ_EnterCalibration();
-void BQ_ExitCalibration();
-void BQ_Init();
-void BQ_Calibrate_CCOffset_BoardOffset();
+void BQ_Reset(void);
+void BQ_EnterCalibration(void);
+void BQ_ExitCalibration(void);
+void BQ_Init(void);
+void BQ_Calibrate_CCOffset_BoardOffset(void);
 void BQ_CalibrateVoltage(uint16_t vApplied);
 void BQ_CalibrateVoltageDivider(uint16_t  vApplied);
 void BQ_CalibrateVoltagePackOffset(uint16_t vApplied);
 void BQ_CalibrateCurrent(int16_t forcedLoadCurrent);
 void floatConversion(float val, int* data);
 void BQ_WriteCCFlash(uint16_t addr, int rawData[]);
-void BQ_RestoreCCSettings();
-void BQ_SetPinCntlConfig();
+void BQ_RestoreCCSettings(void);
+void BQ_SetPinCntlConfig(void);
 void BQ_CalibrateNumOfCells(uint32_t num_of_cells);
 void BQ_SetVoltageDivider(uint32_t voltage_divider);
+void BQ_SetDesignCap(uint32_t designCap);
 
 // Unused Functions from legacy
-void BQ_SetFlashUOV();
+#ifdef BQ_UNUSED
+void BQ_SetFlashUOV(void);
 void BQ_SetLFCC(uint32_t LFCC);
 void BQ_SetMaxPackV(uint32_t voltage);
 void BQ_SetMinPackV(uint32_t voltage);
-void BQ_SetDesignCap(uint32_t designCap);
-void BQ_CEDVConfig();
-void BQ_Learning();
-void BQ_ReadKeys();
-void BQ_Unseal();
+void BQ_CEDVConfig(void);
+void BQ_Learning(void);
+void BQ_ReadKeys(void);
+void BQ_Unseal(void);
+#endif // BQ_UNUSED
 #endif // INC_BQ34110_H

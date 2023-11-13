@@ -127,14 +127,11 @@ uint16_t ADS_ReadADC_SingleEnded(uint8_t channel)
 
   // Write config register to the ADC
   ADS_WriteRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONFIG, config);
-
-  // Wait for the conversion to complete
-  PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
-
+  
   // Check whether conversion still ongoing
   uint16_t res;
   do {
-    PMB_system_delayMs(10);
+    PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
     res = ADS_ReadRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONFIG);
   } while ((res & ADS1115_REG_CONFIG_OS_MASK) == ADS1115_REG_CONFIG_OS_BUSY);
 
