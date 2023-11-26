@@ -10,6 +10,8 @@
 #include "i2c.h"
 #include "ADS1115.h"
 #include "retarget.h"
+#include "SSD1306/ssd1306.h"
+#include "SSD1306/ssd1306_fonts.h"
 
 float PMB_getPressure(void);
 static void setup(void);
@@ -47,6 +49,15 @@ static void setup(void) {
 
     while(!PMB_can_init()) PMB_system_delayMs(1000);
     while(!PMB_i2c_init()) PMB_system_delayMs(1000);
+
+
+    ssd1306_Init();
+
+    ssd1306_Fill(White);
+    ssd1306_SetCursor(2,31);
+	ssd1306_WriteString("Setting Up PMB ...", Font_6x8, Black);
+	ssd1306_UpdateScreen();
+    PMB_system_delayMs(1000);
 }
 
 float PMB_getPressure(void) {

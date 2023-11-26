@@ -43,4 +43,14 @@
 #define PMB_REED_OFF_PIN           (GPIO7)
 
 
+// SSD1306 Configuration
+
+#define SSD1306_USE_I2C
+#define SSD1306_I2C_PORT            (I2C1)  
+#define SSD1306_I2C_ADDR            (0x78 >> 1)
+#define SSD1306_Reset_Port          (GPIOC)
+#define SSD1306_Reset_Pin           (GPIO4)
+#define SSD1306_INCLUDE_FONT_6x8    (1)
+
+
 #endif // INC_PMB_FIRMWARE_H

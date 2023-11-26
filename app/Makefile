@@ -65,6 +65,8 @@ OBJS		+= $(SRC_DIR)/i2c.o
 OBJS		+= $(SRC_DIR)/retarget.o
 OBJS		+= $(SRC_DIR)/ADS1115.o
 OBJS		+= $(SRC_DIR)/BQ34110.o
+OBJS		+= $(SRC_DIR)/SSD1306/ssd1306_fonts.o
+OBJS		+= $(SRC_DIR)/SSD1306/ssd1306.o
 
 ###############################################################################
 # C flags
