@@ -6,10 +6,11 @@
     - GPIO (DONE)
     - I2C (DONE)
     - CAN (DONE)
-- ADS Library Cleanup
-- Port BQ library
-- Port Display library
+- ADS Library Cleanup (DONE)
+- Port BQ library (DONE)
+- Port Display library (DONE)
 - Complete CAN library
+- Main Functionality
 
 ## Advanced Features
 - RTOS
