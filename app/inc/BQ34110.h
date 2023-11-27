@@ -100,9 +100,9 @@
 #define BQ34110_CNTL_PIN_VEN_RESET  0x6D
 /*=========================================================================*/
 
-uint8_t BQ_dataW[10];
-uint8_t BQ_dataR[10];
-uint8_t keys[8];
+extern uint8_t BQ_dataW[10];
+extern uint8_t BQ_dataR[10];
+extern uint8_t keys[8];
 
 // Test function
 void BQ_test(void);

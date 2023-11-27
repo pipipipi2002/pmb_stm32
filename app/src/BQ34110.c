@@ -7,6 +7,9 @@
 #include "system.h"
 #include <libopencm3/stm32/i2c.h>
 
+uint8_t BQ_dataW[10] = {0};
+uint8_t BQ_dataR[10] = {0};
+uint8_t keys[8] = {0};
 
 /**
  * Test function to call BQ library functions

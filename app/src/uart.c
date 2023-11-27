@@ -16,7 +16,7 @@ static void PMB_uart1_init(void) {
     usart_set_mode(USART1, USART_MODE_TX_RX);
     usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
     usart_set_databits(USART1, 8);
-    usart_set_baudrate(USART1, PMB_BAUDRATE);
+    usart_set_baudrate(USART1, PMB_UART_BAUDRATE);
     usart_set_parity(USART1, 0);
     usart_set_stopbits(USART1, 1);
 
