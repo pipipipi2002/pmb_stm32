@@ -35,6 +35,7 @@ uint8_t pmb_msgbuf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 uint64_t updateTimer = 0;
 uint64_t CAN_BattTimer = 0;
 uint64_t CAN_BoardTimer = 0;
+uint64_t CAN_HbTimer = 0;
 uint64_t displayTimer = 0;
 
 
@@ -86,16 +87,32 @@ int main(void) {
         if (PMB_system_getTicks() - CAN_BattTimer > PMB_CAN_BATT_MSG_INTVL) {
             log_pInfo("Sending Battery Statistics via CAN");
             CAN_BattTimer = PMB_system_getTicks();
-            //TODO construct CAN message
-            //TODO send CAN message
+
+            PMB_can_encodeCanMsgBattStat(&batt_voltage, &batt_current);
+#if (PMB_ID % 2 == 1)
+            PMB_can_sendCanMsg(BB_CAN_ID_BATT_1_STAT);
+#else
+            PMB_can_sendCanMsg(BB_CAN_ID_BATT_2_STAT);
+#endif
         }
 
         /* Send Board Stats via CAN */
         if (PMB_system_getTicks() - CAN_BoardTimer > PMB_CAN_BOARD_MSG_INTVL) {
             log_pInfo("Sending Board Statistics via CAN");
             CAN_BoardTimer = PMB_system_getTicks();
-            //TODO construct CAN message
-            //TODO send CAN message
+
+            PMB_can_encodeCanMsgHullStat(&board_temperature, &board_pressure);
+#if (PMB_ID % 2 == 1)
+            PMB_can_sendCanMsg(BB_CAN_ID_PMB_1_STAT);
+#else
+            PMB_can_sendCanMsg(BB_CAN_ID_PMB_2_STAT);
+#endif
+        }
+
+        if (PMB_system_getTicks() - CAN_HbTimer > PMB_CAN_HB_MSG_INTVL) {
+            log_pInfo("Sending Heartbeat via CAN");
+            CAN_HbTimer = PMB_system_getTicks();
+            PMB_can_sendCanMsg(BB_CAN_ID_HEARTBEAT);
         }
 
         /* Update Display */
@@ -104,26 +121,6 @@ int main(void) {
             displayDataMessage();
         }
     }
-
-    // uint8_t data[] = {0xAA, 0xBB, 0xCC, 0xDD};
-
-    // while (true) {
-    //     gpio_toggle(PMB_NERROR_PORT, PMB_NERROR_PIN);
-        
-    //     volatile float pressure = PMB_getPressure();
-    //     log_pInfo("Pressure: %f", pressure);
-
-    //     uint32_t data_size = sizeof(data);
-    //     log_pInfo("Sending CAN message of size: %d", data_size);
-    //     volatile int8_t res = can_transmit(BX_CAN1_BASE, 0x1, false, false, data_size, data);
-    //     if (res >= 0) {
-    //         log_pInfo("CAN: Data sent");
-    //     } else {
-    //         log_pInfo("CAN: Failed to send");
-    //     }
-        
-    //     PMB_system_delayMs(3000);
-    // }
     return 0;
 }
 
