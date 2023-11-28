@@ -6,11 +6,11 @@ This personal project aims to switch from STM32 CMSIS HAL to LibOpenCM3 library,
 Another reason for this project is to learn Rust. The master branch shall be kept in C, while another branch will be in Rust (to be added).
 
 ## Feature list / Wish list
-- Port over current status to LibOpenCM3
-- RTOS
-- Implement Error logging and storage to flash
+- Port over current status to LibOpenCM3 (DONE)
+- Implement Error logging (DONE) and storage to flash
 - Implement CAN Boot Flashloader (maybe boot flash updater)
 - Implement graphics using LVGL library
+- RTOS
 - RUST
 
 # Setup
