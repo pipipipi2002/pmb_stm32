@@ -108,7 +108,8 @@ int main(void) {
             PMB_can_sendCanMsg(BB_CAN_ID_PMB_2_STAT);
 #endif
         }
-
+        
+        /* Send Heartbeat via CAN */
         if (PMB_system_getTicks() - CAN_HbTimer > PMB_CAN_HB_MSG_INTVL) {
             log_pInfo("Sending Heartbeat via CAN");
             CAN_HbTimer = PMB_system_getTicks();

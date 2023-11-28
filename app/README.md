@@ -9,8 +9,8 @@
 - ADS Library Cleanup (DONE)
 - Port BQ library (DONE)
 - Port Display library (DONE)
-- Complete CAN library
-- Main Functionality
+- Complete CAN library (DONE)
+- Main Functionality (DONE)
 
 ## Advanced Features
 - RTOS
