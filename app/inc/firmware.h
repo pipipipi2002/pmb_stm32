@@ -3,6 +3,7 @@
 
 #define PMB_CODE
 #include "common_defines.h"
+#include "can.h"
 
 
 //
@@ -19,6 +20,16 @@
 #define PMB_CAN_BOARD_MSG_INTVL    (1000)
 #define PMB_OLED_REFRESH_INTVL     (500)
 #define PMB_STATUS_UPDATE_INTVL             (50)        // Internal Data Update
+
+#if (PMB_ID % 2 == 1) 
+    #define BB_CAN_ID_BATT_STAT     (BB_CAN_ID_BATT_1_STAT)
+    #define BB_CAN_ID_PMB_STAT      (BB_CAN_ID_PMB_1_STAT)
+    #define BB_HEARTBEAT_ID_PMB     (BB_HEARTBEAT_ID_PMB_1)
+#else 
+    #define BB_CAN_ID_BATT_STAT     (BB_CAN_ID_BATT_2_STAT)
+    #define BB_CAN_ID_PMB_STAT      (BB_CAN_ID_PMB_2_STAT)
+    #define BB_HEARTBEAT_ID_PMB     (BB_HEARTBEAT_ID_PMB_2)
+#endif // PMB_ID
 
 // 
 // BQ calibration

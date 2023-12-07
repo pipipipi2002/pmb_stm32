@@ -6,6 +6,7 @@
 #include <libopencm3/stm32/gpio.h>
 #include "SSD1306/ssd1306.h"
 #include "system.h"
+#include "log.h"
 
 
 #if defined(SSD1306_USE_I2C)
@@ -108,6 +109,8 @@ SSD1306_Error_t ssd1306_FillBuffer(uint8_t* buf, uint32_t len) {
 
 // Initialize the oled screen
 void ssd1306_Init(void) {
+    log_pInfo("SSD1306 Init");
+
     gpio_mode_setup(SSD1306_Reset_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, SSD1306_Reset_Pin);
     gpio_clear(SSD1306_Reset_Port, SSD1306_Reset_Pin);
     
@@ -204,6 +207,8 @@ void ssd1306_Init(void) {
     SSD1306.CurrentY = 0;
     
     SSD1306.Initialized = 1;
+    
+    log_pSuccess("SSD1306 Init Successful");
 }
 
 // Fill the whole screen with the given color
