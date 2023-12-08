@@ -23,8 +23,9 @@
  *          setup and before any printf function call.
  * 
  */
-void retarget_init(void) {
+bool retarget_setup(void) {
     setvbuf(stdout, NULL, _IONBF, 0);
+    return true;
 }
 
 /**
@@ -36,7 +37,7 @@ void retarget_init(void) {
 int _write(int fd, char* ptr, int len) {
     int i;
     if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
-        i = PMB_uart1_writeBytes((uint8_t *) ptr, len);
+        i = uart1_writeBytes((uint8_t *) ptr, len);
 		return i;    
     }
     errno = EBADF;
@@ -46,7 +47,7 @@ int _write(int fd, char* ptr, int len) {
 int _read (int fd, char *ptr, int len) {
     int i;
     if (fd == STDIN_FILENO) {
-        i = PMB_uart1_readBytes((uint8_t*) ptr, len);
+        i = uart1_readBytes((uint8_t*) ptr, len);
         return i;
     }
     errno = EBADF;

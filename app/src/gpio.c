@@ -4,7 +4,7 @@
 #include "log.h"
 #include "firmware.h"
 
-void PMB_gpio_init(void) {
+bool gpio_setup(void) {
     log_pInfo("GPIO Init");
 
     /**
@@ -34,4 +34,6 @@ void PMB_gpio_init(void) {
     gpio_clear(GPIOC, PMB_RELAY_OFF_PIN | PMB_PMOS_ON_GPIO_PIN| PMB_DISPLAY_RESET_PIN); 
 
     log_pSuccess("GPIO Init successful");
+
+    return true;
 }

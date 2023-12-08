@@ -131,7 +131,7 @@ uint16_t ADS_ReadADC_SingleEnded(uint8_t channel)
   // Check whether conversion still ongoing
   uint16_t res;
   do {
-    PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
+    system_delayMs(ADS1115_CONVERSIONDELAY);
     res = ADS_ReadRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONFIG);
   } while ((res & ADS1115_REG_CONFIG_OS_MASK) == ADS1115_REG_CONFIG_OS_BUSY);
 
@@ -182,7 +182,7 @@ int16_t ADS_ReadADC_Differential_0_1()
   ADS_WriteRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONFIG, config);
 
   // Wait for the conversion to complete
-  PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
+  system_delayMs(ADS1115_CONVERSIONDELAY);
 
   // Read the conversion results
   // Shift 12-bit results right 4 bits for the ADS1115
@@ -220,7 +220,7 @@ int16_t ADS_ReadADC_Differential_2_3()
   ADS_WriteRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONFIG, config);
 
   // Wait for the conversion to complete
-  PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
+  system_delayMs(ADS1115_CONVERSIONDELAY);
 
   // Shift 12-bit results right 4 bits for the ADS1115
   return (int16_t)(ADS_ReadRegister(ADS1115_ADDRESS, ADS1115_REG_POINTER_CONVERT) >> ADS1115_BITSHIFT);
@@ -278,7 +278,7 @@ int16_t ADS_GetLastConversionResults()
 {
 
   // Wait for the conversion to complete
-  PMB_system_delayMs(ADS1115_CONVERSIONDELAY);
+  system_delayMs(ADS1115_CONVERSIONDELAY);
 
   // Read the conversion results
   // Shift 12-bit results right 4 bits for the ADS1115

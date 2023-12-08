@@ -16,9 +16,9 @@ uint8_t ssd1306_au8DataW[2];
 void ssd1306_Reset(void) {
     /* for I2C */
     gpio_clear(SSD1306_Reset_Port, SSD1306_Reset_Pin);
-    PMB_system_delayMs(10);
+    system_delayMs(10);
     gpio_set(SSD1306_Reset_Port, SSD1306_Reset_Pin);
-    PMB_system_delayMs(10);
+    system_delayMs(10);
 }
 
 // Send a byte to the command register
@@ -119,7 +119,7 @@ void ssd1306_Init(void) {
 
     // Wait for the screen to boot
 
-    PMB_system_delayMs(100);
+    system_delayMs(100);
 
     // Init OLED
     ssd1306_SetDisplayOn(0); //display off

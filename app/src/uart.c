@@ -5,13 +5,10 @@
 #include "uart.h"
 #include "firmware.h"
 
+bool uart1_setup(void) {
+    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, PMB_UART1_TX_PIN | PMB_UART1_RX_PIN);
+    gpio_set_af(GPIOA, GPIO_AF1, PMB_UART1_TX_PIN | PMB_UART1_RX_PIN);
 
-static void PMB_uart1_init(void);
-static void PMB_uart1_gpioInit(void);
-static void PMB_uart1_deinit(void);
-
-
-static void PMB_uart1_init(void) {
     rcc_periph_clock_enable(RCC_USART1);
     usart_set_mode(USART1, USART_MODE_TX_RX);
     usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
@@ -21,47 +18,35 @@ static void PMB_uart1_init(void) {
     usart_set_stopbits(USART1, 1);
 
     usart_enable(USART1);
+    return true;
 }
 
-static void PMB_uart1_deinit(void) {
+bool uart1_destruct(void) {
     usart_disable(USART1);
     rcc_periph_clock_disable(RCC_USART1);
+    return true;
 }
 
-static void PMB_uart1_gpioInit(void) {
-    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, PMB_UART1_TX_PIN | PMB_UART1_RX_PIN);
-    gpio_set_af(GPIOA, GPIO_AF1, PMB_UART1_TX_PIN | PMB_UART1_RX_PIN);
-}
-
-void PMB_uart1_writeByte(uint8_t data) {
+void uart1_writeByte(uint8_t data) {
     usart_send_blocking(USART1, (uint16_t) data);
 }
 
-uint32_t PMB_uart1_writeBytes(uint8_t* data, const uint32_t len) {
+uint32_t uart1_writeBytes(uint8_t* data, const uint32_t len) {
     uint32_t i;
     for (i = 0;  i < len; i++) {
-        PMB_uart1_writeByte(data[i]);
+        uart1_writeByte(data[i]);
     }
     return i;
 }
 
-uint8_t PMB_uart1_readByte(void) {
+uint8_t uart1_readByte(void) {
     return (uint8_t) usart_recv_blocking(USART1); 
 }
 
-uint32_t PMB_uart1_readBytes(uint8_t* data, const uint32_t len) {
+uint32_t uart1_readBytes(uint8_t* data, const uint32_t len) {
     uint32_t i;
     for (i = 0; i < len; i++) {
-        data[i] = PMB_uart1_readByte();
+        data[i] = uart1_readByte();
     }
     return i;
-}
-
-void PMB_uart_init(void) {
-    PMB_uart1_gpioInit();
-    PMB_uart1_init();
-}
-
-void PMB_uart_deinit(void) {
-    PMB_uart1_deinit();
 }

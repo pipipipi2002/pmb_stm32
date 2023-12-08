@@ -6,7 +6,7 @@
 #include "firmware.h"
 #include "log.h"
 
-bool PMB_i2c_init(void) {
+bool i2c_setup(void) {
     log_pInfo("I2C Init");
 
     /* GPIO configuration */

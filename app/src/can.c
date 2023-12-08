@@ -12,7 +12,7 @@
  * @return true if success
  * @return false if fail
  */
-bool PMB_can_init(void) {
+bool can_setup(void) {
     log_pInfo("CAN Init");
 
     /* Initialise CAN GPIO ports */

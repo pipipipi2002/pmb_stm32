@@ -86,9 +86,9 @@ int main(void) {
         }
 
         /* Update PMB and Battery Stats */
-        if (PMB_system_getTicks() - updateTimer > PMB_STATUS_UPDATE_INTVL) {
+        if (system_getTicks() - updateTimer > PMB_STATUS_UPDATE_INTVL) {
             log_pInfo("Updating internal data");
-            updateTimer = PMB_system_getTicks();
+            updateTimer = system_getTicks();
             batt_status = BQ_GetBattStatus();
             batt_current = BQ_GetCurrent() * PMB_CURRENT_SCALE;
             batt_current = (batt_current < 0) ? -1 * batt_current : batt_current;
@@ -98,33 +98,33 @@ int main(void) {
         }
 
         /* Send Battery Stats via CAN */
-        if (PMB_system_getTicks() - CAN_BattTimer > PMB_CAN_BATT_MSG_INTVL) {
+        if (system_getTicks() - CAN_BattTimer > PMB_CAN_BATT_MSG_INTVL) {
             log_pInfo("Sending Battery Statistics via CAN");
-            CAN_BattTimer = PMB_system_getTicks();
+            CAN_BattTimer = system_getTicks();
 
             encodeCanMsgBattStat();
             can_sendCanMsg(&canBattMsg, BB_CAN_ID_BATT_STAT);
         }
 
         /* Send Board Stats via CAN */
-        if (PMB_system_getTicks() - CAN_BoardTimer > PMB_CAN_BOARD_MSG_INTVL) {
+        if (system_getTicks() - CAN_BoardTimer > PMB_CAN_BOARD_MSG_INTVL) {
             log_pInfo("Sending Board Statistics via CAN");
-            CAN_BoardTimer = PMB_system_getTicks();
+            CAN_BoardTimer = system_getTicks();
 
             encodeCanMsgBoardStat();
             can_sendCanMsg(&canBoardMsg, BB_CAN_ID_PMB_STAT);
         }
         
         /* Send Heartbeat via CAN */
-        if (PMB_system_getTicks() - CAN_HbTimer > PMB_CAN_HB_MSG_INTVL) {
+        if (system_getTicks() - CAN_HbTimer > PMB_CAN_HB_MSG_INTVL) {
             log_pInfo("Sending Heartbeat via CAN");
-            CAN_HbTimer = PMB_system_getTicks();
+            CAN_HbTimer = system_getTicks();
             can_sendCanMsg(&canHbMsg, BB_CAN_ID_HEARTBEAT);
         }
 
         /* Update Display */
-        if (PMB_system_getTicks() - displayTimer > PMB_OLED_REFRESH_INTVL) {
-            displayTimer = PMB_system_getTicks();
+        if (system_getTicks() - displayTimer > PMB_OLED_REFRESH_INTVL) {
+            displayTimer = system_getTicks();
             displayDataMessage();
         }
     }
@@ -132,16 +132,17 @@ int main(void) {
 }
 
 static void setup(void) {
-    PMB_system_init();    
-    PMB_uart_init();
-    retarget_init();
-    PMB_gpio_init();
+    /* HAL Setup */
+    while(!system_setup());    
+    while(!uart1_setup()) system_delayMs(1000);
+    while(!retarget_setup()) system_delayMs(1000);
+    while(!gpio_setup()) system_delayMs(1000);
+    while(!can_setup()) system_delayMs(1000);
+    while(!i2c_setup()) system_delayMs(1000);
 
-    while(!PMB_can_init()) PMB_system_delayMs(1000);
-    while(!PMB_i2c_init()) PMB_system_delayMs(1000);
-
+    /* Driver Setup */
     ssd1306_Init();
-
+    
     log_pSuccess("Setup Completed");
 }
 
@@ -162,7 +163,7 @@ static float getPressure(void) {
 static void poweroff(void) {
     displayOffMessage();
     gpio_clear(PMB_PMOS_ON_GPIO_PORT, PMB_PMOS_ON_GPIO_PIN); // Turn off power to vehicle
-    PMB_system_delayMs(500);
+    system_delayMs(500);
     gpio_set(PMB_RELAY_OFF_PORT, PMB_RELAY_OFF_PIN); // Turn off power to PMB circuit
 }
 
@@ -222,7 +223,7 @@ static void displayOnMessage(void) {
     ssd1306_SetCursor(2,31);
 	ssd1306_WriteString("TURNING ON PMB ...", Font_6x8, Black);
 	ssd1306_UpdateScreen();
-    PMB_system_delayMs(1000);
+    system_delayMs(1000);
 }
 
 /**
@@ -234,7 +235,7 @@ static void displayOffMessage(void) {
     ssd1306_SetCursor(2,31);
 	ssd1306_WriteString("TURNING OFF PMB ...", Font_6x8, Black);
 	ssd1306_UpdateScreen();
-    PMB_system_delayMs(1000);
+    system_delayMs(1000);
 }
 
 /**

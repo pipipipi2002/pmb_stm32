@@ -4,7 +4,7 @@
 #include "common_defines.h"
 #include <sys/stat.h>
 
-void retarget_init(void);
+bool retarget_setup(void);
 
 int _write(int fd, char* ptr, int len);
 int _read (int fd, char *ptr, int len);

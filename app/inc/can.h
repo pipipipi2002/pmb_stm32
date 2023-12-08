@@ -84,7 +84,7 @@ typedef union {
 /*
  * Public facing interface
  */
-bool PMB_can_init(void);
+bool can_setup(void);
 int8_t can_sendCanMsg (canMsg_tu* msg, uint32_t msgId);
 
 #endif // INC_PMB_CAN_H

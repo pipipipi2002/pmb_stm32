@@ -69,7 +69,7 @@ void BQ_WriteControl(uint8_t cntl_data) {
  */
 int BQ_ReadControl(uint8_t cntl_data) {
 	BQ_WriteControl(cntl_data);
-	PMB_system_delayMs(30);
+	system_delayMs(30);
 	return BQ_ReadRegister(BQ34110_REG_CNTL, 2); // Refer to @details above
 }
 
@@ -95,7 +95,7 @@ void BQ_WriteMAC(uint16_t cntl_data) {
  */
 uint32_t BQ_ReadMAC(uint16_t cntl_data, int bytes) {
 	BQ_WriteMAC(cntl_data);
-	PMB_system_delayMs(100);
+	system_delayMs(100);
 	return BQ_ReadRegister(BQ34110_REG_MAC_DATA, bytes);
 }
 
@@ -112,7 +112,7 @@ uint32_t BQ_ReadFlash(uint16_t addr, uint8_t bytes) {
 
 	do {
 		BQ_WriteMAC(addr);
-		PMB_system_delayMs(50);
+		system_delayMs(50);
 
 		// Check if MAC contains the correct subcommand
 		mac = BQ_ReadRegister(BQ34110_REG_MAC, 2) & 0xFFFF;
@@ -121,7 +121,7 @@ uint32_t BQ_ReadFlash(uint16_t addr, uint8_t bytes) {
 		// MAC = BQ_dataR[0];
 		// HAL_I2C_Mem_Read(&hi2c1, BQ34110_ADDRESS, 0x3F, 1, BQ_dataR, 1, 10);
 		// MAC |= BQ_dataR[0] << 8;
-		PMB_system_delayMs(500);
+		system_delayMs(500);
 	}  while (mac != addr);
 
 	// HAL_I2C_Mem_Read(&hi2c1, BQ34110_ADDRESS, BQ34110_REG_MAC_DATA, 1, BQ_dataR, bytes, 10);
@@ -151,7 +151,7 @@ uint32_t BQ_ReadFlash(uint16_t addr, uint8_t bytes) {
  */
 void BQ_WriteFlash(uint16_t addr, uint8_t bytes, uint16_t flashDataW) {
 	BQ_WriteMAC(addr);
-	PMB_system_delayMs(50);
+	system_delayMs(50);
 
 	// Sent in big endian
 	BQ_dataW[0] = BQ34110_REG_MAC_DATA;
@@ -164,7 +164,7 @@ void BQ_WriteFlash(uint16_t addr, uint8_t bytes, uint16_t flashDataW) {
 	}
 	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 1 + bytes, 0, 0);
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 1 + bytes, HAL_MAX_DELAY);
-	PMB_system_delayMs(300);
+	system_delayMs(300);
 
 	BQ_SendCheckSum(addr, flashDataW);
 
@@ -172,7 +172,7 @@ void BQ_WriteFlash(uint16_t addr, uint8_t bytes, uint16_t flashDataW) {
 	BQ_dataW[1] = 0x04 + bytes;
 	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 2, 0, 0);
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 2, 10);
-	PMB_system_delayMs(30);
+	system_delayMs(30);
 }
 
 /**
@@ -190,7 +190,7 @@ void BQ_SendCheckSum(uint16_t addr, uint32_t flashDataW) {
     BQ_dataW[1] = BQ_CalculateCheckSum(addr, flashDataW);
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 2, 10);
 	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 2, 0, 0);
-	PMB_system_delayMs(1000); // bq needs time here!!!
+	system_delayMs(1000); // bq needs time here!!!
 }
 
 
@@ -310,7 +310,7 @@ void BQ_Reset() {
 	// Check whether initialisation is complete. 0x3B is the MSB of Operation status.
 	uint16_t res;
 	do {
-		PMB_system_delayMs(1000);
+		system_delayMs(1000);
 		res = BQ_ReadRegister(BQ34110_REG_OP_STATUS, 2); // TODO: Check
 		// res = BQ_dataR[0] | (BQ_dataR[1] << 8);
 	} while (!((res >> 8) & (1 << 1))); // Check for INITCOMP
@@ -326,7 +326,7 @@ void BQ_EnterCalibration() {
 	uint32_t buffer;
 	do {
 		BQ_WriteControl(BQ34110_CNTL_CAL_TOGGLE);
-		PMB_system_delayMs(300);
+		system_delayMs(300);
 		
 		buffer = BQ_ReadMAC(BQ34110_CNTL_MANUF_STATUS, 2);
 	} while (!((buffer >> 8) & (1 << 7))); // Check for CAL_EN bit to be set
@@ -341,7 +341,7 @@ void BQ_ExitCalibration() {
 	uint32_t buffer;
 	do {
 		BQ_WriteControl(BQ34110_CNTL_CAL_TOGGLE);
-		PMB_system_delayMs(300);
+		system_delayMs(300);
 
 		buffer = BQ_ReadMAC(BQ34110_CNTL_MANUF_STATUS, 2);
 	} while (((buffer >> 8) & (1 << 7))); // Check for CAL_EN bit to be cleared
@@ -407,13 +407,13 @@ void BQ_Calibrate_CCOffset_BoardOffset() {
 
 	do {
 		BQ_WriteControl(BQ34110_CNTL_BOARD_OFFSET);
-		PMB_system_delayMs(1000);
+		system_delayMs(1000);
 		
 		buffer = BQ_ReadControl(BQ34110_CNTL_CONTROL_STATUS);
 	} while ( !(buffer & (1 << 5)) || !(buffer & (1 << 4)) ); // Bit 5: CCA; Bit 4: BCA
 
 	do {
-		PMB_system_delayMs(1000);
+		system_delayMs(1000);
 		buffer = BQ_ReadControl(BQ34110_CNTL_CONTROL_STATUS);
 	} while ( (buffer & (1 << 5)) || (buffer & (1 << 4)) );
 	
@@ -469,7 +469,7 @@ void BQ_CalibrateVoltageDivider(uint16_t vApplied) {
 			counterPrev = counterNow;
 			log_pInfo("Raw Data: %ld", rawDataSum);
 		} else {
-			PMB_system_delayMs(wait);
+			system_delayMs(wait);
 			counterNow = BQ_AnalogCount();
 		}
 	}
@@ -524,7 +524,7 @@ void BQ_CalibrateVoltagePackOffset(uint16_t vApplied) {
 			counterPrev = counterNow;
 			log_pInfo("Raw Data: %ld", rawDataSum);
 		} else {
-			PMB_system_delayMs(wait);
+			system_delayMs(wait);
 			counterNow = BQ_AnalogCount();
 		}
 	}
@@ -546,14 +546,14 @@ void BQ_CalibrateVoltagePackOffset(uint16_t vApplied) {
 	log_pInfo("Voffset: %d", vOffset);
 
 	BQ_WriteMAC(BQ34110_DF_PACK_V_OFFSET);
-	PMB_system_delayMs(50);
+	system_delayMs(50);
 
 	// We dont use the writeFlash() function as we might be writing negative values.
 	BQ_dataW[0] = BQ34110_REG_MAC_DATA;
 	BQ_dataW[1] = vOffset;
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 2, HAL_MAX_DELAY);
 	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 2, 0, 0);
-	PMB_system_delayMs(300);
+	system_delayMs(300);
 
 	BQ_SendCheckSum(BQ34110_DF_PACK_V_OFFSET, vOffset);
 
@@ -562,14 +562,14 @@ void BQ_CalibrateVoltagePackOffset(uint16_t vApplied) {
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 2, 10);
 	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 2, 0, 0);
 	
-	PMB_system_delayMs(30);
+	system_delayMs(30);
 	/* Stop writing pack offset voltage */
 	log_pSuccess("Completed V offset calibration.");
 }
 
 void BQ_CalibrateCurrent(int16_t forcedLoadCurrent) {
 	log_pInfo("Starting Current Calibration in 5s");
-	PMB_system_delayMs(5000);
+	system_delayMs(5000);
 	log_pInfo("Starting Current Calibration");
 
 	int16_t ccOffset;
@@ -599,7 +599,7 @@ void BQ_CalibrateCurrent(int16_t forcedLoadCurrent) {
 			counterPrev = counterNow;
 			log_pInfo("Raw Data: %d", rawDataSum);
 		} else {
-			PMB_system_delayMs(wait);
+			system_delayMs(wait);
 			counterNow = BQ_AnalogCount();
 		}
 	}
@@ -646,7 +646,7 @@ void BQ_CalibrateCurrent(int16_t forcedLoadCurrent) {
 	} while (data1 != (uint32_t)(ccDelta_df[0] << 8 | ccDelta_df[1]) &&
 			 data2 != (uint32_t)(ccDelta_df[2] << 8 | ccDelta_df[3]));
 
-	PMB_system_delayMs(300);
+	system_delayMs(300);
 
 	log_pSuccess("Current Calibration Complete");
 	/* Stop Writing to data flash */
@@ -709,7 +709,7 @@ void floatConversion(float val, int* data) {
 */
 void BQ_WriteCCFlash(uint16_t addr, int rawData[]) {
 	BQ_WriteMAC(addr);
-	PMB_system_delayMs(50);
+	system_delayMs(50);
 
 	// Sent in big endian
 	BQ_dataW[0] = BQ34110_REG_MAC_DATA;
@@ -719,7 +719,7 @@ void BQ_WriteCCFlash(uint16_t addr, int rawData[]) {
 	BQ_dataW[4] = (uint8_t)(rawData[3]);
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 5, HAL_MAX_DELAY);
 	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 5, 0, 0);
-	PMB_system_delayMs(300);
+	system_delayMs(300);
 
 	// Checksum
 	uint32_t data = (rawData[0] | (rawData[1] << 8) | (rawData[2] << 16) | (rawData[3] << 24));
@@ -731,14 +731,14 @@ void BQ_WriteCCFlash(uint16_t addr, int rawData[]) {
     // BQ_dataW[0] = BQ34110_REG_MAC_DATA_SUM;
     // BQ_dataW[1] = summ;
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 2, 10);
-	// PMB_system_delayMs(500); //bq needs time here!!!
+	// system_delayMs(500); //bq needs time here!!!
 
 	BQ_dataW[0] = BQ34110_REG_MAC_DATA_LEN;
 	BQ_dataW[1] = 0x04 + 0x04;
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 2, 10);
 	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 2, 0, 0);
 
-	PMB_system_delayMs(30);
+	system_delayMs(30);
 }
 
 /**
@@ -769,7 +769,7 @@ void BQ_RestoreCCSettings() {
 
 	BQ_ExitCalibration();
 
-	PMB_system_delayMs(300);
+	system_delayMs(300);
 }
 
 /**
@@ -849,7 +849,7 @@ void BQ_SetFlashUOV() {
 	BQ_WriteFlash(BQ34110_DF_FLASH_UOV, 0x02, 0x0064);
 
 	flashUOV = BQ_ReadFlash(BQ34110_DF_FLASH_UOV, 2);
-	PMB_system_delayMs(10);
+	system_delayMs(10);
 }
 
 /**
@@ -914,7 +914,7 @@ void BQ_CEDVConfig() {
 //Set CEDV Gauging Config
 //	BQ_WriteFlash(BQ34110_DF_CEDV_CONFIG, 0x01, (1 << FIXED_EDV0_BIT));
 //	data = BQ_ReadFlash(BQ34110_DF_DESIGN_VOLTAGE, 2);
-//	PMB_system_delayMs(10);
+//	system_delayMs(10);
 
 	//Set Design Voltage to 3700
 
@@ -993,7 +993,7 @@ void BQ_Learning() {
 
 void BQ_ReadKeys() {
 	BQ_WriteControl(BQ34110_CNTL_SECURITY_KEYS);
-	PMB_system_delayMs(10);
+	system_delayMs(10);
 
 	// HAL_I2C_Mem_Read(&hi2c1, BQ34110_ADDRESS, BQ34110_REG_MAC_DATA, 1, keys, 8, 10);
 	BQ_dataW[0] = BQ34110_REG_MAC_DATA;
@@ -1016,14 +1016,14 @@ void BQ_Unseal() {
 	BQ_dataW[2] = keys[1];
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 3, 10);
 	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 3, 0, 0);
-	PMB_system_delayMs(10);
+	system_delayMs(10);
 
 	BQ_dataW[0] = BQ34110_REG_CNTL;
 	BQ_dataW[1] = keys[2];
 	BQ_dataW[2] = keys[3];
 	// HAL_I2C_Master_Transmit(&hi2c1, BQ34110_ADDRESS, BQ_dataW, 3, 10);
 	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 3, 0, 0);
-	PMB_system_delayMs(10);
+	system_delayMs(10);
 
 	status = BQ_ReadRegister(BQ34110_REG_OP_STATUS, 1) & 0x06;
 	if (status == 0x04) printf("Unsealed Status");
