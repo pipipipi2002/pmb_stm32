@@ -49,6 +49,16 @@
 #define BB_HEARTBEAT_ID_PMB_1               (7)
 #define BB_HEARTBEAT_ID_PMB_2               (8)
 
+typedef struct {
+    uint32_t id;
+    bool ext_id;
+    bool rtr;
+    uint8_t filter_id;
+    uint8_t len;
+    uint8_t data[8];
+    uint16_t ts;
+} canFrame;
+
 /*
  * Semantic definition of the CAN message frame
  */
@@ -86,5 +96,7 @@ typedef union {
  */
 bool can_setup(void);
 int8_t can_sendCanMsg (canMsg_tu* msg, uint32_t msgId);
+bool can_getDataReady(void);
+void can_getData(canFrame* frame);
 
 #endif // INC_PMB_CAN_H

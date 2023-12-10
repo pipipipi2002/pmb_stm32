@@ -1,11 +1,28 @@
 #include <libopencm3/stm32/can.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/cm3/nvic.h>
 
 #include "can.h"
 #include "firmware.h"
 #include "log.h"
 
+static void receive(uint8_t fifo);
+
+static bool data_ready = false;
+static canFrame msg_buffer; 
+
+void cec_can_isr (void) {
+    // Message pending on FIFO 0?
+    if (CAN_RF0R(CAN1) & CAN_RF0R_FMP0_MASK) {
+        receive(0);
+    }
+
+    // Message pending on FIFO 1?
+    if (CAN_RF1R(CAN1) & CAN_RF1R_FMP1_MASK) {
+        receive(1);
+    }
+}
 /**
  * @brief Initialise the CAN1 port on PMB. This includes GPIO, RCC, CAN configs, filters
  * 
@@ -28,7 +45,7 @@ bool can_setup(void) {
 
     /* CAN1 Init */
     uint32_t ret = can_init(
-        BX_CAN1_BASE,       // CAN port
+        CAN1,       // CAN port
         false,              // TTCM
         true,               // ABOM
         false,              // AWUM
@@ -47,13 +64,17 @@ bool can_setup(void) {
         return false;
     }
     
+    /* Enable Interrupt on CAN RX */
+    can_enable_irq(CAN1, CAN_IER_FMPIE0 | CAN_IER_FMPIE1);
+    nvic_enable_irq(NVIC_CEC_CAN_IRQ);
+
 	/* ID 0 ~ 15 goes to FIFO0
 	 * Filter configuration:
 	 * ID: 		0b00001111
 	 * Mask:	0b11110000
 	 * Effect:  Accept all IDs below 16
 	 */
-    can_filter_id_mask_16bit_init(1, 0x0F, 0xF0, 0x0F, 0xF0, CAN_FIFO0, true);
+    can_filter_id_mask_16bit_init(1, 0x0F, 0xF0, 0x0F, 0xF0, 0, true);
 
     /* ID 16 ~  goes to FIFO1
 	 * Filter configuration:
@@ -62,7 +83,7 @@ bool can_setup(void) {
 	 * Effect:  Accept all. But since 0~15 will go into filter bank with higher priority,
 	 * only 16~ will go here
 	 */
-    can_filter_id_mask_16bit_init(2, 0x00, 0x00, 0x00, 0x00, CAN_FIFO1, true);
+    can_filter_id_mask_16bit_init(2, 0x00, 0x00, 0x00, 0x00, 1, true);
     
     log_pSuccess("CAN Init Sucessful");
     return true;
@@ -78,10 +99,49 @@ bool can_setup(void) {
 int8_t can_sendCanMsg (canMsg_tu* msg, uint32_t msgId) {
     int8_t res;
     if (msgId == BB_CAN_ID_HEARTBEAT) {
-        res = can_transmit(BX_CAN1_BASE, msgId, false, false, CAN_HB_SIZE, msg->au8msg);
+        res = can_transmit(CAN1, msgId, false, false, CAN_HB_SIZE, msg->au8msg);
     } else {
-        res = can_transmit(BX_CAN1_BASE, msgId, false, false, CAN_MSG_FRAME_SIZE, msg->au8msg);
+        res = can_transmit(CAN1, msgId, false, false, CAN_MSG_FRAME_SIZE, msg->au8msg);
     }
 
     return res;
+}
+
+/**
+ * @brief Receive routine for CAN
+ * 
+ * @param fifo FIFO ID, 0 or 1
+ */
+static void receive(uint8_t fifo) {
+    canFrame rxFrame;
+    can_receive(CAN1, fifo, true, 
+                &rxFrame.id, 
+                &rxFrame.ext_id, 
+                &rxFrame.rtr, 
+                &rxFrame.filter_id, 
+                &rxFrame.len, 
+                rxFrame.data, 
+                &rxFrame.ts);
+
+    data_ready = true;
+    msg_buffer = rxFrame;
+}
+
+/**
+ * @brief Getter function for Data Ready Flag
+ * 
+ * @return true if Data is ready, false otherwise
+ */
+bool can_getDataReady(void) {
+    return data_ready;
+}
+
+/**
+ * @brief Retrieve the latest data in the buffer
+ * 
+ * @param[out] frame pointer to can frame
+ */
+void can_getData(canFrame* frame) {
+    data_ready = false;
+    *frame = msg_buffer;
 }
