@@ -1,0 +1,9 @@
+msgpack==1.0.7
+packaging==23.2
+python-can==4.3.0
+python-can-canine==0.2.5
+pyusb==1.2.1
+setuptools==68.0.0
+typing_extensions==4.8.0
+wheel==0.37.1
+wrapt==1.16.0

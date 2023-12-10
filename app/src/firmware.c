@@ -64,11 +64,12 @@ int main(void) {
 
     displayOnMessage();
 
+    log_pInfo("Entered Application");
     log_pInfo("Power Monitoring Board AUV4");
     log_pInfo("PMB Number: %d", PMB_ID);
 
-    /* Supply power (PMB circuit is already on beforehand, just for completeness) */
-    gpio_clear(PMB_RELAY_OFF_PORT, PMB_RELAY_OFF_PIN);      // Power to PMB Circuit
+    /* Supply power */
+    gpio_clear(PMB_RELAY_OFF_PORT, PMB_RELAY_OFF_PIN);      // Latch pwoer to PMB 
     // TODO Do some verification before supplying power to vehicle
     gpio_set(PMB_PMOS_ON_GPIO_PORT, PMB_PMOS_ON_GPIO_PIN);  // Power to Vehicle
     log_pSuccess("PMOS ON, Battery connected to Vehicle");
