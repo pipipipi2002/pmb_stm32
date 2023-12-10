@@ -1,8 +1,10 @@
 #include <libopencm3/stm32/gpio.h>
 
+#include "board_def.h"
+
 #include "gpio.h"
 #include "log.h"
-#include "firmware.h"
+
 
 bool gpio_setup(void) {
     log_pInfo("GPIO Init");

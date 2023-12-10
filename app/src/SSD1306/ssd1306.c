@@ -4,10 +4,11 @@
 
 #include <libopencm3/stm32/i2c.h>
 #include <libopencm3/stm32/gpio.h>
-#include "SSD1306/ssd1306.h"
+
 #include "system.h"
 #include "log.h"
 
+#include "SSD1306/ssd1306.h"
 
 #if defined(SSD1306_USE_I2C)
 

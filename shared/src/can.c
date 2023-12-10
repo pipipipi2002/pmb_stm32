@@ -3,8 +3,8 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/nvic.h>
 
+#include "board_def.h"
 #include "can.h"
-#include "firmware.h"
 #include "log.h"
 
 static void receive(uint8_t fifo);

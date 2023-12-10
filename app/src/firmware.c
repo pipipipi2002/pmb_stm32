@@ -2,15 +2,20 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/can.h>
 
-// Own Header Files
-#include "firmware.h"
+// Shared Header Files
+#include "common_defines.h"
+#include "board_def.h"
 #include "system.h"
 #include "uart.h"
 #include "log.h"
 #include "gpio.h"
+#include "retarget.h"
+#include "can.h"
+
+// Own Header Files
+#include "firmware.h"
 #include "i2c.h"
 #include "ADS1115.h"
-#include "retarget.h"
 #include "BQ34110.h"
 #include "SSD1306/ssd1306.h"
 #include "SSD1306/ssd1306_fonts.h"

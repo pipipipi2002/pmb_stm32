@@ -1,4 +1,3 @@
-
 #ifndef _INC_SSD1306_FONTS_H
 #define _INC_SSD1306_FONTS_H
 #include <stdint.h>

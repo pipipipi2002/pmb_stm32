@@ -1,5 +1,4 @@
 #include "log.h"
-#include "uart.h"
 
 #include <stdio.h>
 #include <stdarg.h>

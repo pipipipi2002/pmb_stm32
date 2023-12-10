@@ -15,14 +15,14 @@ BINARY = firmware
 ###############################################################################
 # Basic Device Setup
 
-LIBNAME			= opencm3_stm32f0
-DEFS				+= -DSTM32F0
+LIBNAME		= opencm3_stm32f0
+DEFS		+= -DSTM32F0
 ARCH_FLAGS	= -mthumb -mcpu=cortex-m0
 
 ###############################################################################
 # Linkerscript
 
-LDSCRIPT = linkerscript.ld
+LDSCRIPT 	= linkerscript.ld
 LDLIBS		+= -l$(LIBNAME)
 LDFLAGS		+= -L$(OPENCM3_DIR)/lib
 LDFLAGS		+= -u _printf_float
@@ -32,22 +32,23 @@ LDFLAGS		+= -u _printf_float
 
 DEFS		+= -I$(OPENCM3_DIR)/include
 DEFS		+= -I$(INC_DIR)
+DEFS		+= -I$(SHARED_INC_DIR)
 
 ###############################################################################
 # Executables
 
 PREFIX		?= arm-none-eabi-
 
-CC		:= $(PREFIX)gcc
-CXX		:= $(PREFIX)g++
-LD		:= $(PREFIX)gcc
-AR		:= $(PREFIX)ar
-AS		:= $(PREFIX)as
+CC			:= $(PREFIX)gcc
+CXX			:= $(PREFIX)g++
+LD			:= $(PREFIX)gcc
+AR			:= $(PREFIX)ar
+AS			:= $(PREFIX)as
 OBJCOPY		:= $(PREFIX)objcopy
 OBJDUMP		:= $(PREFIX)objdump
-GDB		:= $(PREFIX)gdb
+GDB			:= $(PREFIX)gdb
 STFLASH		= $(shell which st-flash)
-OPT		:= -Os
+OPT			:= -Os
 DEBUG		:= -ggdb3
 CSTD		?= -std=c99
 
@@ -56,17 +57,17 @@ CSTD		?= -std=c99
 # Source files
 
 OBJS		+= $(SRC_DIR)/$(BINARY).o
-OBJS		+= $(SRC_DIR)/system.o
-OBJS		+= $(SRC_DIR)/uart.o
-OBJS		+= $(SRC_DIR)/log.o
-OBJS		+= $(SRC_DIR)/can.o
-OBJS		+= $(SRC_DIR)/gpio.o
 OBJS		+= $(SRC_DIR)/i2c.o
-OBJS		+= $(SRC_DIR)/retarget.o
 OBJS		+= $(SRC_DIR)/ADS1115.o
 OBJS		+= $(SRC_DIR)/BQ34110.o
 OBJS		+= $(SRC_DIR)/SSD1306/ssd1306_fonts.o
 OBJS		+= $(SRC_DIR)/SSD1306/ssd1306.o
+OBJS		+= $(SHARED_SRC_DIR)/system.o
+OBJS		+= $(SHARED_SRC_DIR)/uart.o
+OBJS		+= $(SHARED_SRC_DIR)/log.o
+OBJS		+= $(SHARED_SRC_DIR)/can.o
+OBJS		+= $(SHARED_SRC_DIR)/gpio.o
+OBJS		+= $(SHARED_SRC_DIR)/retarget.o
 
 ###############################################################################
 # C flags

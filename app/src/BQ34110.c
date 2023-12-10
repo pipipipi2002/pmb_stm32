@@ -1,11 +1,12 @@
 //
 // 	BQ34110 Library 
 //
+#include <libopencm3/stm32/i2c.h>
 
-#include "BQ34110.h"
 #include "log.h"
 #include "system.h"
-#include <libopencm3/stm32/i2c.h>
+
+#include "BQ34110.h"
 
 uint8_t BQ_dataW[10] = {0};
 uint8_t BQ_dataR[10] = {0};

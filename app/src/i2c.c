@@ -2,9 +2,10 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/i2c.h>
 
-#include "i2c.h"
-#include "firmware.h"
+#include "board_def.h"
 #include "log.h"
+
+#include "i2c.h"
 
 bool i2c_setup(void) {
     log_pInfo("I2C Init");

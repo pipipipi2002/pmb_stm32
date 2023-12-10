@@ -13,7 +13,7 @@
 
 _BEGIN_STD_C
 
-#include "firmware.h"
+#include "board_def.h"
 #include "ssd1306_fonts.h"
 
 /* vvv I2C config vvv */

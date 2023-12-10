@@ -3,8 +3,8 @@
 
 #include "common_defines.h"
 
-#define CAN_MSG_FRAME_SIZE          (8)
-#define CAN_HB_SIZE                 (1)
+#define CAN_MSG_FRAME_SIZE                  (8)
+#define CAN_HB_SIZE                         (1)
 
 /*
  * CAN Message IDs

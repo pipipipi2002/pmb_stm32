@@ -3,6 +3,7 @@
 #include <libopencm3/stm32/i2c.h>
 
 #include "system.h"
+
 #include "ADS1115.h"
 
 uint16_t perm_config;

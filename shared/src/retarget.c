@@ -1,6 +1,7 @@
+#include <libopencm3/stm32/usart.h>
+
 #include "retarget.h"
 #include "uart.h"
-#include <libopencm3/stm32/usart.h>
 
 #include <stdio.h>
 #include <errno.h>
