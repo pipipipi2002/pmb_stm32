@@ -42,7 +42,6 @@ int main (void) {
 void setup(void) {
     while(!system_setup());    
     while(!uart1_setup()) system_delayMs(1000);
-    while(!retarget_setup()) system_delayMs(1000);
     while(!gpio_setup()) system_delayMs(1000);
     while(!can_setup()) system_delayMs(1000);
 
@@ -56,3 +55,4 @@ static inline void loop(void) {
         log_pInfo("Heartbeat");
     }
 }
+

@@ -1,7 +1,6 @@
 #include "log.h"
 
-#include <stdio.h>
-#include <stdarg.h>
+#include <printf.h>
 
 void log_pInfo(const char* fmt, ...) {
     va_list args;

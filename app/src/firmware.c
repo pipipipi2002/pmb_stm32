@@ -8,7 +8,6 @@
 #include "uart.h"
 #include "log.h"
 #include "gpio.h"
-#include "retarget.h"
 #include "can.h"
 
 // Own Header Files
@@ -140,7 +139,6 @@ static void setup(void) {
     /* HAL Setup */
     while(!system_setup());    
     while(!uart1_setup()) system_delayMs(1000);
-    while(!retarget_setup()) system_delayMs(1000);
     while(!gpio_setup()) system_delayMs(1000);
     while(!can_setup()) system_delayMs(1000);
     while(!i2c_setup()) system_delayMs(1000);

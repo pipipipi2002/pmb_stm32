@@ -7,6 +7,7 @@ endif
 SRC_DIR        = src
 INC_DIR        = inc
 OPENCM3_DIR    = ../libopencm3
+PRINTF_DIR 	   = ../printf
 SHARED_SRC_DIR = ../shared/src
 SHARED_INC_DIR = ../shared/inc
 
@@ -33,6 +34,12 @@ LDFLAGS		+= -u _printf_float
 DEFS		+= -I$(OPENCM3_DIR)/include
 DEFS		+= -I$(INC_DIR)
 DEFS		+= -I$(SHARED_INC_DIR)
+
+###############################################################################
+# Printf Submodule
+
+OBJS 		+= $(PRINTF_DIR)/printf.o
+DEFS 		+= -I$(PRINTF_DIR)
 
 ###############################################################################
 # Executables
