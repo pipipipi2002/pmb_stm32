@@ -1,5 +1,6 @@
 // Libopencm3 Header Files
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/cm3/scb.h>
 #include <printf.h>
 
 // Shared Header Files
@@ -18,6 +19,8 @@
 #include "BQ34110.h"
 #include "SSD1306/ssd1306.h"
 #include "SSD1306/ssd1306_fonts.h"
+
+#define BOOTLOADER_SIZE         (0x8000U)
 
 /*
  * Global Variables 
@@ -44,6 +47,7 @@ canMsg_tu canHbMsg = {.heartbeatId = BB_HEARTBEAT_ID_PMB};
 /*
  * Internal Function Declarations
  */
+static void vector_setup(void);
 int main(void);
 static void setup(void);
 static float getPressure(void);
@@ -59,7 +63,12 @@ static void setState(uint16_t status);
  * Function Defintions
  */
 
+static void vector_setup(void) {
+    SCB_VTOR = BOOTLOADER_SIZE;         // Relocate the Vector Interrupt Table
+}
+
 int main(void) {
+    vector_setup();
     setup();
 
     displayOnMessage();

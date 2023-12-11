@@ -6,6 +6,7 @@
 #define SYSTICK_FREQ        (1000)      // trigger every 1ms
 
 bool system_setup(void);
+void system_destruct(void);
 uint64_t system_getTicks(void);
 void system_delayMs(uint64_t time_ms);
 

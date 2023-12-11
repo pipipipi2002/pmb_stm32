@@ -20,7 +20,8 @@
         "retarget.h": "c",
         "system.h": "c",
         "log.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "scb.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

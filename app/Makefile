@@ -64,6 +64,7 @@ CSTD		?= -std=c99
 # Source files
 
 OBJS		+= $(SRC_DIR)/$(BINARY).o
+OBJS		+= $(SRC_DIR)/bootloader.o
 OBJS		+= $(SRC_DIR)/i2c.o
 OBJS		+= $(SRC_DIR)/ADS1115.o
 OBJS		+= $(SRC_DIR)/BQ34110.o

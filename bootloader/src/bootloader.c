@@ -1,5 +1,6 @@
 // Libopencm3 Header Files
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/memorymap.h>
 
 // Shared Header Files
 #include "common_defines.h"
@@ -9,6 +10,9 @@
 #include "log.h"
 #include "gpio.h"
 #include "can.h"
+
+#define BOOTLOADER_SIZE         (0x8000U)        // 32KiBi 
+#define MAIN_APP_START_ADDR     (FLASH_BASE + BOOTLOADER_SIZE)
 
 /*
  * Global variables
@@ -20,7 +24,8 @@ uint64_t activityTimer = 0;
  */
 int main (void);
 static void setup(void);
-static inline void loop(void);
+static void destruct(void);
+static void jumpToApplication(void);
 
 /*
  * Function Definitions
@@ -35,24 +40,35 @@ int main (void) {
     gpio_clear(PMB_PMOS_ON_GPIO_PORT, PMB_PMOS_ON_GPIO_PIN);    // Disable power to vehicle
     log_pInfo("Latch power to circuit, disable power to AUV4");
 
-    while (true) { loop(); }
+    log_pInfo("Prepare to enter application");
+    destruct();
+    jumpToApplication();
     return 0; // will not reach here
 }
 
-void setup(void) {
+static void setup(void) {
     while(!system_setup());    
     while(!uart1_setup()) system_delayMs(1000);
     while(!gpio_setup()) system_delayMs(1000);
-    while(!can_setup()) system_delayMs(1000);
+    // while(!can_setup()) system_delayMs(1000);
 
     log_pSuccess("Setup Completed");
 }
-
-static inline void loop(void) {
-    if (system_getTicks() - activityTimer > 1000) {
-        activityTimer = system_getTicks();
-        gpio_toggle(PMB_NERROR_PORT, PMB_NERROR_PIN);
-        log_pInfo("Heartbeat");
-    }
+static void destruct(void) {
+    uart1_destruct();
+    system_destruct();
 }
 
+static void jumpToApplication(void) {
+    typedef void (*void_fn)(void); // Function Pointer
+
+    /* vector table is after SP; Reset handler is 1st in the Vector Table */
+    uint32_t* reset_vector_addr = (uint32_t*) (MAIN_APP_START_ADDR + 4U);
+    /* The reset handler contains the address to the reset function */ 
+    uint32_t* reset_handler_addr = (uint32_t*) (*reset_vector_addr); 
+    /* Map reset vector to a function */
+    void_fn app_reset_handler = (void_fn) reset_handler_addr;
+
+    /* Jump to Main Application Reset Handler */
+    app_reset_handler();
+}

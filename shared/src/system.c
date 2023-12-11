@@ -6,6 +6,7 @@
 
 static void system_rccInit(void);
 static void system_systickInit(void);
+static void system_systickDeinit(void);
 
 static volatile uint64_t system_ticks = 0;
 
@@ -37,6 +38,12 @@ static void system_systickInit(void) {
     systick_interrupt_enable();
 }
 
+static void system_systickDeinit(void) {
+    systick_interrupt_disable();
+    systick_counter_disable();
+    systick_clear();
+}
+
 uint64_t system_getTicks(void) {
     return system_ticks;
 }
@@ -46,8 +53,12 @@ void system_delayMs(uint64_t time_ms) {
     while (system_getTicks() < end_time);
 }
 
-bool system_setup(void){
+bool system_setup(void) {
     system_rccInit();
     system_systickInit();
     return true;
+}
+
+void system_destruct(void) {
+    system_systickDeinit();
 }

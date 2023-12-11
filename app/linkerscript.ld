@@ -21,6 +21,9 @@
 /* Define memory regions. */
 MEMORY
 {
+	/* We are including bootloader into the main application 
+	 * Thus total flash size will still be the same. 
+	 */
 	rom 	 (rx)  : ORIGIN = 0x08000000, LENGTH = 128k        /* FLASH */
 	ram 	 (rwx) : ORIGIN = 0x20000000, LENGTH = 16k         /* SRAM */
 }
@@ -35,14 +38,10 @@ ENTRY(reset_handler)
 SECTIONS
 {
 	.text : {
-		KEEP (*(.bootloader_section))
+		KEEP (*(.bootloader_section))	/* Bootloader binary */
 
 		*(.vectors)	            /* Vector table */
 		. = ALIGN(16);
-
-		KEEP (*(.firmware_info))
-		KEEP (*(.firmware_signature))
-
 		*(.text*)	            /* Program code */
 		. = ALIGN(4);
 		*(.rodata*)	            /* Read-only data */
