@@ -8,7 +8,6 @@
 #include "uart.h"
 #include "log.h"
 #include "gpio.h"
-#include "retarget.h"
 #include "can.h"
 
 /*

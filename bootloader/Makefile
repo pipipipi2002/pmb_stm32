@@ -62,7 +62,6 @@ OBJS		+= $(SHARED_SRC_DIR)/uart.o
 OBJS		+= $(SHARED_SRC_DIR)/log.o
 OBJS		+= $(SHARED_SRC_DIR)/can.o
 OBJS		+= $(SHARED_SRC_DIR)/gpio.o
-OBJS		+= $(SHARED_SRC_DIR)/retarget.o
 
 ###############################################################################
 # C flags
