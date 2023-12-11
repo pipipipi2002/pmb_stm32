@@ -2,10 +2,26 @@
 #define INC_BQ34110_H
 
 #include <math.h>
-#include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
-#include <stdio.h>
+
+#include "system.h"			// Systick`
+#include "log.h"			
+
+#if defined (DISABLE_PRINT)
+	#define $INFO(fmt, ...)
+	#define $ERROR(fmt, ...) 
+	#define $SUCCESS(fmt, ...) 
+#elif defined (USE_LOGGER)
+	#define $INFO(fmt, ...) log_pInfo(fmt, ##__VA_ARGS__)
+	#define $ERROR(fmt, ...) log_pError(fmt, ##__VA_ARGS__)
+	#define $SUCCESS(fmt, ...) log_pSuccess(fmt, ##__VA_ARGS__)
+#else
+	#include <stdio.h>
+	#define $INFO(fmt, ...) printf(fmt, ##__VA_ARGS__)
+	#define $ERROR(fmt, ...) printf(fmt, ##__VA_ARGS__)
+	#define $SUCCESS(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#endif // USE_LOGGER
 
 #define BQ_BATT_CAPACITY			(15000UL)		// mAH capacity
 #define BQ_NO_OF_CELL				(4UL)			// Battery Cell Count

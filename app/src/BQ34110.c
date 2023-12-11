@@ -3,9 +3,6 @@
 //
 #include <libopencm3/stm32/i2c.h>
 
-#include "log.h"
-#include "system.h"
-
 #include "BQ34110.h"
 
 uint8_t BQ_dataW[10] = {0};
@@ -16,7 +13,7 @@ uint8_t keys[8] = {0};
  * Test function to call BQ library functions
 */
 void BQ_test() {
-	log_pInfo("I am printing from inside BQ");
+	return;
 }
 
 //
@@ -132,11 +129,11 @@ uint32_t BQ_ReadFlash(uint16_t addr, uint8_t bytes) {
 	}
 	uint8_t readChecksum = BQ_CalculateCheckSum(BQ34110_ADDRESS, flashDataR);
 	if (readChecksum != (BQ_ReadRegister(BQ34110_REG_MAC_DATA_SUM, 1) & 0xff)) {
-		log_pError("Read Flash Checksum Error");
+		$ERROR("Read Flash Checksum Error");
 	}
 
 	if (bytes != (BQ_ReadRegister(BQ34110_REG_MAC_DATA_LEN, 1) & 0xff)) {
-		log_pError("Read Flash Len Error");
+		$ERROR("Read Flash Len Error");
 	}
 
 	return flashDataR;
@@ -354,46 +351,46 @@ void BQ_ExitCalibration() {
  * affected by the voltage drop (in case it happens).
 */
 void BQ_Init() {
-	log_pInfo("Initialising BQ Init");
+	$INFO("Initialising BQ Init");
 
 	uint32_t batt_capacity, num_of_cells, voltage_divider;
 	batt_capacity = BQ_BATT_CAPACITY;
 	num_of_cells = BQ_NO_OF_CELL;
 	voltage_divider = BQ_VOLTAGE_DIVIDER;
 
-	log_pInfo("Resetting.");
+	$INFO("Resetting.");
 	BQ_Reset();
 
-	log_pInfo("Enter Calibration.");
+	$INFO("Enter Calibration.");
 	BQ_EnterCalibration();
 
 	// BQ_SetFlashUOV();
 	
-	log_pInfo("Setting Pin Ctl Config.");
+	$INFO("Setting Pin Ctl Config.");
 	BQ_SetPinCntlConfig(); 					// Enable pin control and set VEN
 
-	log_pInfo("Setting Number of Cells.");
+	$INFO("Setting Number of Cells.");
 	BQ_CalibrateNumOfCells(num_of_cells);	// Set number of cells (ie. 4)
 
-	log_pInfo("Setting Voltage Divider.");
+	$INFO("Setting Voltage Divider.");
 	BQ_SetVoltageDivider(voltage_divider);	// Set Voltage Divider
 
 	// BQ_SetMaxPackV();
 	// BQ_SetMinPackV();
 
-	log_pInfo("Setting Battery Capacity.");
+	$INFO("Setting Battery Capacity.");
 	BQ_SetDesignCap(batt_capacity); 		// Set Battery Capacity
 
 	// BQ_SetLFCC(batt_capacity);	   		// Set Learned Full Charge Capacity at 12000 mAh for first test without learning
 	// BQ_CEDVConfig();
 
-	log_pInfo("Exiting Calibration.");
+	$INFO("Exiting Calibration.");
 	BQ_ExitCalibration();
 
-	log_pInfo("Calibrating Board Offset.");
+	$INFO("Calibrating Board Offset.");
 	BQ_Calibrate_CCOffset_BoardOffset();
 
-	log_pSuccess("Completed BQ init");	
+	$SUCCESS("Completed BQ init");	
 }
 
 
@@ -429,12 +426,12 @@ void BQ_Calibrate_CCOffset_BoardOffset() {
  * @param vApplied Voltage applied during calibration.
  */
 void BQ_CalibrateVoltage(uint16_t vApplied) {
-	log_pInfo("Initialising Voltage Calibration");	
+	$INFO("Initialising Voltage Calibration");	
 
 	BQ_CalibrateVoltageDivider(vApplied);
 	BQ_CalibrateVoltagePackOffset(vApplied);
 	
-	log_pSuccess("Completed Voltage Calibration");	
+	$SUCCESS("Completed Voltage Calibration");	
 }
 
 /**
@@ -446,7 +443,7 @@ void BQ_CalibrateVoltage(uint16_t vApplied) {
  * @param vApplied Voltage applied during calibration
  */
 void BQ_CalibrateVoltageDivider(uint16_t vApplied) {
-	log_pInfo("Calibrating Voltage Divider");
+	$INFO("Calibrating Voltage Divider");
 	
 	/* Start Raw Data Reading */
 	uint8_t samplesToAvg = 50;
@@ -461,14 +458,14 @@ void BQ_CalibrateVoltageDivider(uint16_t vApplied) {
 
 	BQ_EnterCalibration();
 
-	log_pInfo("Sampling Raw Data.");
+	$INFO("Sampling Raw Data.");
 
 	while(loopCount < samplesToAvg) {
 		if (counterNow != counterPrev) {
 			rawDataSum += BQ_GetRawVoltage();
 			loopCount++;
 			counterPrev = counterNow;
-			log_pInfo("Raw Data: %ld", rawDataSum);
+			$INFO("Raw Data: %ld", rawDataSum);
 		} else {
 			system_delayMs(wait);
 			counterNow = BQ_AnalogCount();
@@ -487,13 +484,13 @@ void BQ_CalibrateVoltageDivider(uint16_t vApplied) {
 	// This value cannot exceed 65535.
 	uint32_t curr_divider = BQ_ReadFlash(BQ34110_DF_VOLTAGE_DIVIDER, 2);
 	uint16_t new_divider = (uint16_t)(vApplied * curr_divider / avgRawVoltage);
-	log_pInfo("Curr Divider: %ld", curr_divider);
-	log_pInfo("New Divider: %d", new_divider);
+	$INFO("Curr Divider: %ld", curr_divider);
+	$INFO("New Divider: %d", new_divider);
 	do {
 		BQ_WriteFlash(BQ34110_DF_VOLTAGE_DIVIDER, 0x02, new_divider);
 		data = BQ_ReadFlash(BQ34110_DF_VOLTAGE_DIVIDER, 2);
 	} while (data != new_divider);
-	log_pSuccess("Completed Voltage divider calibration ");
+	$SUCCESS("Completed Voltage divider calibration ");
 	/* Stop write new Voltage Divider to DF */
 }
 
@@ -502,7 +499,7 @@ void BQ_CalibrateVoltageDivider(uint16_t vApplied) {
  * @param vApplied voltage applied during calibration.
 */
 void BQ_CalibrateVoltagePackOffset(uint16_t vApplied) {
-	log_pInfo("Calibrating Voltage Pack Offset.");
+	$INFO("Calibrating Voltage Pack Offset.");
 	/* Start Raw */
 	uint8_t samplesToAvg = 50;
 	uint32_t avgRawVoltage = 0;
@@ -516,14 +513,14 @@ void BQ_CalibrateVoltagePackOffset(uint16_t vApplied) {
 	uint16_t wait = 200;
 
 	BQ_EnterCalibration();
-	log_pInfo("Sampling Raw Data.");
+	$INFO("Sampling Raw Data.");
 
 	for (loopCount = 0; loopCount < samplesToAvg; ) {
 		if (counterNow != counterPrev) {
 			rawDataSum += BQ_GetRawVoltage();
 			loopCount++;
 			counterPrev = counterNow;
-			log_pInfo("Raw Data: %ld", rawDataSum);
+			$INFO("Raw Data: %ld", rawDataSum);
 		} else {
 			system_delayMs(wait);
 			counterNow = BQ_AnalogCount();
@@ -544,7 +541,7 @@ void BQ_CalibrateVoltagePackOffset(uint16_t vApplied) {
 	else if (avgRawVoltage - vApplied > 128) {vOffset = -128;}
 	else {vOffset = (vApplied - avgRawVoltage);}
 	
-	log_pInfo("Voffset: %d", vOffset);
+	$INFO("Voffset: %d", vOffset);
 
 	BQ_WriteMAC(BQ34110_DF_PACK_V_OFFSET);
 	system_delayMs(50);
@@ -565,13 +562,13 @@ void BQ_CalibrateVoltagePackOffset(uint16_t vApplied) {
 	
 	system_delayMs(30);
 	/* Stop writing pack offset voltage */
-	log_pSuccess("Completed V offset calibration.");
+	$SUCCESS("Completed V offset calibration.");
 }
 
 void BQ_CalibrateCurrent(int16_t forcedLoadCurrent) {
-	log_pInfo("Starting Current Calibration in 5s");
+	$INFO("Starting Current Calibration in 5s");
 	system_delayMs(5000);
-	log_pInfo("Starting Current Calibration");
+	$INFO("Starting Current Calibration");
 
 	int16_t ccOffset;
 	int8_t boardOffset;
@@ -591,14 +588,14 @@ void BQ_CalibrateCurrent(int16_t forcedLoadCurrent) {
 
 	BQ_EnterCalibration();
 
-	log_pInfo("Sampling Raw Data.");
+	$INFO("Sampling Raw Data.");
 
 	while (loopCount < samplesToAvg) {
 		if (counterNow != counterPrev) {
 			rawDataSum += BQ_GetRawCurrent();
 			loopCount++;
 			counterPrev = counterNow;
-			log_pInfo("Raw Data: %d", rawDataSum);
+			$INFO("Raw Data: %d", rawDataSum);
 		} else {
 			system_delayMs(wait);
 			counterNow = BQ_AnalogCount();
@@ -613,24 +610,24 @@ void BQ_CalibrateCurrent(int16_t forcedLoadCurrent) {
 	float ccGain, ccDelta;
 	ccGain = (forcedLoadCurrent / (avgRawCurrent - (ccOffset + boardOffset) / 16.0));
 	ccDelta = (ccGain * 1193046);
-	log_pInfo("avgRawCurrent: %f", avgRawCurrent);
-	log_pInfo("ccOffset: %d", ccOffset);
-	log_pInfo("boardOffset: %d", boardOffset);
-	log_pInfo("CC Gain: %f", ccGain);
-	log_pInfo("CC Delta: %f", ccDelta);
+	$INFO("avgRawCurrent: %f", avgRawCurrent);
+	$INFO("ccOffset: %d", ccOffset);
+	$INFO("boardOffset: %d", boardOffset);
+	$INFO("CC Gain: %f", ccGain);
+	$INFO("CC Delta: %f", ccDelta);
 
 	int ccGain_df[4], ccDelta_df[4];
 	for (int i = 0; i<4; i++) {
 		ccGain_df[i] = 0;
 		ccDelta_df[i] = 0;
 	}
-	log_pInfo("Converting Data points");
+	$INFO("Converting Data points");
 	floatConversion(ccGain, ccGain_df);
 	floatConversion(ccDelta, ccDelta_df);
 	/* Stop Current Calculation */
 
 	/* Start Writing to Data flash */
-	log_pInfo("Writing Data to DF");
+	$INFO("Writing Data to DF");
 	uint32_t data1, data2;
 
 	do {
@@ -649,7 +646,7 @@ void BQ_CalibrateCurrent(int16_t forcedLoadCurrent) {
 
 	system_delayMs(300);
 
-	log_pSuccess("Current Calibration Complete");
+	$SUCCESS("Current Calibration Complete");
 	/* Stop Writing to data flash */
 }
 
@@ -791,7 +788,7 @@ void BQ_SetPinCntlConfig() {
 		BQ_WriteFlash(BQ34110_DF_PIN_CNTL_CONFIG, 0x01, pinCntlConfig | (1 << 4));
 
 		pinCntlConfig = BQ_ReadFlash(BQ34110_DF_PIN_CNTL_CONFIG, 1) & (1<<4);
-		log_pInfo("pin Cntl config: 0x%X", pinCntlConfig);
+		$INFO("pin Cntl config: 0x%X", pinCntlConfig);
 	} while (pinCntlConfig != 0x10);
 }
 
