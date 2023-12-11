@@ -1,6 +1,7 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
+#include <printf.h>
 
 #include "board_def.h"
 #include "uart.h"
@@ -49,4 +50,11 @@ uint32_t uart1_readBytes(uint8_t* data, const uint32_t len) {
         data[i] = uart1_readByte();
     }
     return i;
+}
+
+/* For printf submodule */
+void _putchar(char character)
+{
+    // send char to console etc.
+    uart1_writeByte((uint8_t) character);
 }

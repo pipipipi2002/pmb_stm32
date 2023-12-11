@@ -14,8 +14,9 @@
 // #include "stm32f0xx_hal_i2c.h"		//can library
 // #include "stm32f0xx_hal_cortex.h"	    //nvic
 
-#include "common_defines.h"
-
+#include <stdlib.h>
+#include <libopencm3/stm32/i2c.h>
+#include "system.h" // systic
 /*=========================================================================
     I2C ADDRESS/BITS
     -----------------------------------------------------------------------*/
