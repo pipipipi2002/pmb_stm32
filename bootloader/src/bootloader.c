@@ -31,6 +31,8 @@ static void jumpToApplication(void);
  * Function Definitions
  */
 int main (void) {
+    system_rccInit();
+    system_systickInit();
     setup();
     log_pInfo("Entered Bootloader");
     log_pInfo("Power Monitoring Board AUV4");
@@ -47,16 +49,15 @@ int main (void) {
 }
 
 static void setup(void) {
-    while(!system_setup());    
     while(!uart1_setup()) system_delayMs(1000);
     while(!gpio_setup()) system_delayMs(1000);
-    // while(!can_setup()) system_delayMs(1000);
+    while(!can_setup()) system_delayMs(1000);
 
     log_pSuccess("Setup Completed");
 }
 static void destruct(void) {
     uart1_destruct();
-    system_destruct();
+    system_systickDeinit();
 }
 
 static void jumpToApplication(void) {

@@ -87,6 +87,12 @@ SECTIONS
 	. = ALIGN(4);
 	_etext = .;
 
+	/* RAM vector table */
+	.ramvectortable (NOLOAD) : {
+		*(.ramvectortable)
+	} > ram
+	. = ALIGN(4);
+
 	/* ram, but not cleared on reset, eg boot/app comms */
 	.noinit (NOLOAD) : {
 		*(.noinit*)

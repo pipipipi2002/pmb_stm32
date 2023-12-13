@@ -1,6 +1,8 @@
 // Libopencm3 Header Files
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rcc.h>
 #include <libopencm3/cm3/scb.h>
+#include <libopencm3/stm32/syscfg.h>
 #include <printf.h>
 
 // Shared Header Files
@@ -21,10 +23,14 @@
 #include "SSD1306/ssd1306_fonts.h"
 
 #define BOOTLOADER_SIZE         (0x8000U)
+#define APPLICATION_ADDR        (FLASH_BASE + BOOTLOADER_SIZE)
 
 /*
  * Global Variables 
  */
+// Interrupt Vector Table in SRAM 
+volatile uint32_t vectorTable[48] __attribute__((section(".ramvectortable")));
+
 // Telemetry Data
 uint16_t batt_voltage = 0;
 int32_t batt_current = 0;
@@ -47,8 +53,8 @@ canMsg_tu canHbMsg = {.heartbeatId = BB_HEARTBEAT_ID_PMB};
 /*
  * Internal Function Declarations
  */
-static void vector_setup(void);
 int main(void);
+static void vector_setup(void);
 static void setup(void);
 static float getPressure(void);
 static void poweroff(void);
@@ -63,19 +69,34 @@ static void setState(uint16_t status);
  * Function Defintions
  */
 
+/**
+ * @brief Relocate vector table to SRAM location. 
+ *        Due to Cortex M0 restriction on editing the VTOR.
+ *        Refer to AN4065.
+ */
 static void vector_setup(void) {
-    SCB_VTOR = BOOTLOADER_SIZE;         // Relocate the Vector Interrupt Table
+    /* As Cortex M0 doesnt allow VTOR to be editted, we copy the vector */
+    for (uint32_t i = 0; i < 48; i++) {
+        vectorTable[i] =  *(volatile uint32_t*)(APPLICATION_ADDR + (i << 2));
+    }
+    /* Enable clock to SYSCFG APB2 Peripheral */
+    RCC_APB2ENR |= RCC_APB2ENR_SYSCFGCOMPEN;
+    /* Link 0x0000_0000 to SRAM at 0x2000_0000 */
+    SYSCFG_CFGR1 |= SYSCFG_CFGR1_MEM_MODE_SRAM;
 }
 
-int main(void) {
-    vector_setup();
-    setup();
+int main(void) {    
+    system_rccInit();       // Setup RCC 
+    vector_setup();         // Setup IVT relocation
+    system_systickInit();   // Setup Systick
 
-    displayOnMessage();
+    setup();
 
     log_pInfo("Entered Application");
     log_pInfo("Power Monitoring Board AUV4");
     log_pInfo("PMB Number: %d", PMB_ID);
+
+    displayOnMessage();
 
     /* Supply power */
     gpio_clear(PMB_RELAY_OFF_PORT, PMB_RELAY_OFF_PIN);      // Latch pwoer to PMB 
@@ -147,7 +168,6 @@ int main(void) {
 
 static void setup(void) {
     /* HAL Setup */
-    while(!system_setup());    
     while(!uart1_setup()) system_delayMs(1000);
     while(!gpio_setup()) system_delayMs(1000);
     while(!can_setup()) system_delayMs(1000);

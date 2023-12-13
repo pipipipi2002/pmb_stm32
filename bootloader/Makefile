@@ -150,7 +150,8 @@ print-%:
 %.bin: %.elf
 	@#printf "  OBJCOPY $(*).bin\n"
 	$(Q)$(OBJCOPY) -Obinary $(*).elf $(*).bin
-	$(Q)python script/pad-bootloader.py
+# Pad the bootloader bin to full bootloader size
+	$(Q)python script/pad-bootloader.py 
 
 %.hex: %.elf
 	@#printf "  OBJCOPY $(*).hex\n"

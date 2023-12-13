@@ -10,6 +10,10 @@
 bool i2c_setup(void) {
     log_pInfo("I2C Init");
 
+    /* I2C Clock source */
+    rcc_osc_on(RCC_HSI);
+    rcc_wait_for_osc_ready(RCC_HSI);
+
     /* GPIO configuration */
     gpio_mode_setup(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, PMB_I2C1_SCL_PIN | PMB_I2C1_SDA_PIN);
     gpio_set_af(GPIOB, GPIO_AF1, PMB_I2C1_SCL_PIN | PMB_I2C1_SDA_PIN);

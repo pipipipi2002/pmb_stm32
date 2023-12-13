@@ -5,9 +5,11 @@
 
 #define SYSTICK_FREQ        (1000)      // trigger every 1ms
 
-bool system_setup(void);
-void system_destruct(void);
+void system_rccInit(void);
+void system_systickInit(void);
+void system_systickDeinit(void);
 uint64_t system_getTicks(void);
 void system_delayMs(uint64_t time_ms);
+
 
 #endif // INC_PMB_SYSTEM_H
