@@ -22,9 +22,6 @@
 #include "SSD1306/ssd1306.h"
 #include "SSD1306/ssd1306_fonts.h"
 
-#define BOOTLOADER_SIZE         (0x8000U)
-#define APPLICATION_ADDR        (FLASH_BASE + BOOTLOADER_SIZE)
-
 /*
  * Global Variables 
  */
@@ -77,7 +74,7 @@ static void setState(uint16_t status);
 static void vector_setup(void) {
     /* As Cortex M0 doesnt allow VTOR to be editted, we copy the vector */
     for (uint32_t i = 0; i < 48; i++) {
-        vectorTable[i] =  *(volatile uint32_t*)(APPLICATION_ADDR + (i << 2));
+        vectorTable[i] =  *(volatile uint32_t*)(MAIN_APP_START_ADDR + (i << 2));
     }
     /* Enable clock to SYSCFG APB2 Peripheral */
     RCC_APB2ENR |= RCC_APB2ENR_SYSCFGCOMPEN;

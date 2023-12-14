@@ -11,9 +11,6 @@
 #include "gpio.h"
 #include "can.h"
 
-#define BOOTLOADER_SIZE         (0x8000U)        // 32KiBi 
-#define MAIN_APP_START_ADDR     (FLASH_BASE + BOOTLOADER_SIZE)
-
 /*
  * Global variables
  */
@@ -69,7 +66,9 @@ static void jumpToApplication(void) {
     uint32_t* reset_handler_addr = (uint32_t*) (*reset_vector_addr); 
     /* Map reset vector to a function */
     void_fn app_reset_handler = (void_fn) reset_handler_addr;
-
+    /* Set MSP to the APP stack pointer */
+    uint32_t app_top_stack = (*(uint32_t*)MAIN_APP_START_ADDR); 
+    __asm volatile ("MSR msp, %0" : : "r" (app_top_stack) : );
     /* Jump to Main Application Reset Handler */
     app_reset_handler();
 }
