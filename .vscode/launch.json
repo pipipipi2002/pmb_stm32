@@ -45,6 +45,22 @@
             "device": "STM32F072RB",
             "runToEntryPoint": "main",
             "interface": "swd"
-          }
+          },
+          {
+            "name": "Open OCD Firmware Debug",
+            "cwd": "${workspaceFolder}/app",
+            "executable": "./firmware.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "configFiles": [
+              "interface/stlink.cfg",
+              "target/stm32f0x.cfg",
+            ],
+            "openOCDLaunchCommands": ["init", "reset init"],
+            "runToEntryPoint": "main",
+            "svdFile": "./.vscode/STM32F072x.svd",
+            "preLaunchTask": "build_debug"
+            }
     ]
 }

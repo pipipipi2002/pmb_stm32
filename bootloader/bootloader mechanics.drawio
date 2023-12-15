@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-12-14T14:12:59.253Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" version="22.1.7" etag="aoX5S9zKTFoB2TLa1p1f" type="google">
+<mxfile host="app.diagrams.net" modified="2023-12-15T03:56:25.305Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" version="22.1.7" etag="EQpgpycdKLVVUOCtaYyt" type="google" pages="2">
   <diagram name="Page-1" id="L8v-k4GA8zyhKXHsQq-C">
     <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -321,6 +321,14 @@
         <mxCell id="QN8Zc_zHYGFrYNp_f-iq-144" value="Why not copy the IVT in Bootloader?&lt;br&gt;- Then I will have to reserve the ram space in bootloader region too. If I can change the VTOR directly, then I would have changed in the bootloader region.&amp;nbsp;&lt;br&gt;Why not copy the APP stack to MSP in APP instead?&lt;br&gt;- I can but i have to do it in the reset handler before anything is pushed onto the stack. The reset handler is part of Libopencm3 source code and Im avoiding changing their library." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Verdana;fontSize=8;" vertex="1" parent="1">
           <mxGeometry x="550" y="740" width="275" height="120" as="geometry" />
         </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="HCrM1j1eoFrxenF8RPO0" name="Page-2">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
       </root>
     </mxGraphModel>
   </diagram>
