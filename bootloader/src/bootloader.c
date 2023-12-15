@@ -1,6 +1,5 @@
 // Libopencm3 Header Files
 #include <libopencm3/stm32/gpio.h>
-#include <libopencm3/stm32/memorymap.h>
 
 // Shared Header Files
 #include "common_defines.h"
