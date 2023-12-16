@@ -7,20 +7,20 @@
 #include "can_if.h"
 #include "log.h"
 
-static void receive(uint8_t fifo);
+static void canif_receive(uint8_t fifo);
 
 static bool data_ready = false;
-static canFrame msg_buffer; 
+static canFrame_ts msg_buffer; 
 
 void cec_can_isr (void) {
     // Message pending on FIFO 0?
     if (CAN_RF0R(CAN1) & CAN_RF0R_FMP0_MASK) {
-        receive(0);
+        canif_receive(0);
     }
 
     // Message pending on FIFO 1?
     if (CAN_RF1R(CAN1) & CAN_RF1R_FMP1_MASK) {
-        receive(1);
+        canif_receive(1);
     }
 }
 /**
@@ -45,7 +45,7 @@ bool canif_setup(void) {
 
     /* CAN1 Init */
     uint32_t ret = can_init(
-        CAN1,       // CAN port
+        CAN1,               // CAN port
         false,              // TTCM
         true,               // ABOM
         false,              // AWUM
@@ -96,14 +96,8 @@ bool canif_setup(void) {
  * @param msgId can msg id
  * @return int8_t number of bytes sent, -1 for failure
  */
-int8_t canif_sendCanMsg (canMsg_tu* msg, uint32_t msgId) {
-    int8_t res;
-    if (msgId == BB_CAN_ID_HEARTBEAT) {
-        res = can_transmit(CAN1, msgId, false, false, CAN_HB_SIZE, msg->au8msg);
-    } else {
-        res = can_transmit(CAN1, msgId, false, false, CAN_MSG_FRAME_SIZE, msg->au8msg);
-    }
-
+int8_t canif_sendCanMsg (canMsg_tu* msg, uint8_t size, uint32_t msgId) {
+    int8_t res = can_transmit(CAN1, msgId, false, false, size, msg->au8msg); // Non blocking tx
     return res;
 }
 
@@ -112,8 +106,8 @@ int8_t canif_sendCanMsg (canMsg_tu* msg, uint32_t msgId) {
  * 
  * @param fifo FIFO ID, 0 or 1
  */
-static void receive(uint8_t fifo) {
-    canFrame rxFrame;
+static void canif_receive(uint8_t fifo) {
+    canFrame_ts rxFrame;
     can_receive(CAN1, fifo, true, 
                 &rxFrame.id, 
                 &rxFrame.ext_id, 
@@ -132,7 +126,7 @@ static void receive(uint8_t fifo) {
  * 
  * @return true if Data is ready, false otherwise
  */
-bool canif_getDataReady(void) {
+bool canif_getRxDataReady(void) {
     return data_ready;
 }
 
@@ -141,7 +135,7 @@ bool canif_getDataReady(void) {
  * 
  * @param[out] frame pointer to can frame
  */
-void canif_getData(canFrame* frame) {
+void canif_getRxData(canFrame_ts* frame) {
     data_ready = false;
     *frame = msg_buffer;
 }
