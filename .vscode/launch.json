@@ -10,6 +10,7 @@
             "device": "STM32F072RB",
             "runToEntryPoint": "main",
             "interface": "swd",
+            "svdFile": "./.vscode/STM32F072x.svd",
             "preLaunchTask": "build_debug"
           },
           {
@@ -22,6 +23,7 @@
             "device": "STM32F072RB",
             "runToEntryPoint": "main",
             "interface": "swd",
+            "svdFile": "./.vscode/STM32F072x.svd",
             "preLaunchTask": "build_bootloader"
           },
           {
@@ -33,7 +35,8 @@
             "type": "cortex-debug",
             "device": "STM32F072RB",
             "runToEntryPoint": "main",
-            "interface": "swd"
+            "interface": "swd",
+            "svdFile": "./.vscode/STM32F072x.svd"
           },
           {
             "name": "ST-Link: Attach to Bootloader",
@@ -44,7 +47,8 @@
             "type": "cortex-debug",
             "device": "STM32F072RB",
             "runToEntryPoint": "main",
-            "interface": "swd"
+            "interface": "swd",
+            "svdFile": "./.vscode/STM32F072x.svd"
           },
           {
             "name": "Open OCD Firmware Debug",

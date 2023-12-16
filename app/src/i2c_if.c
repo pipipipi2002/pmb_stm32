@@ -5,9 +5,9 @@
 #include "board_def.h"
 #include "log.h"
 
-#include "i2c.h"
+#include "i2c_if.h"
 
-bool i2c_setup(void) {
+bool i2cif_setup(void) {
     log_pInfo("I2C Init");
 
     /* I2C Clock source */

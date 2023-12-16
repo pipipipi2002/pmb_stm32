@@ -65,16 +65,16 @@ CSTD		?= -std=c99
 
 OBJS		+= $(SRC_DIR)/$(BINARY).o
 OBJS		+= $(SRC_DIR)/bootloader.o
-OBJS		+= $(SRC_DIR)/i2c.o
+OBJS		+= $(SRC_DIR)/i2c_if.o
 OBJS		+= $(SRC_DIR)/ADS1115.o
 OBJS		+= $(SRC_DIR)/BQ34110.o
 OBJS		+= $(SRC_DIR)/SSD1306/ssd1306_fonts.o
 OBJS		+= $(SRC_DIR)/SSD1306/ssd1306.o
 OBJS		+= $(SHARED_SRC_DIR)/system.o
-OBJS		+= $(SHARED_SRC_DIR)/uart.o
 OBJS		+= $(SHARED_SRC_DIR)/log.o
-OBJS		+= $(SHARED_SRC_DIR)/can.o
-OBJS		+= $(SHARED_SRC_DIR)/gpio.o
+OBJS		+= $(SHARED_SRC_DIR)/uart_if.o
+OBJS		+= $(SHARED_SRC_DIR)/can_if.o
+OBJS		+= $(SHARED_SRC_DIR)/gpio_if.o
 
 ###############################################################################
 # C flags

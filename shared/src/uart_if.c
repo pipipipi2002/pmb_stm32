@@ -4,9 +4,9 @@
 #include <printf.h>
 
 #include "board_def.h"
-#include "uart.h"
+#include "uart_if.h"
 
-bool uart1_setup(void) {
+bool uart1if_setup(void) {
     gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, PMB_UART1_TX_PIN | PMB_UART1_RX_PIN);
     gpio_set_af(GPIOA, GPIO_AF1, PMB_UART1_TX_PIN | PMB_UART1_RX_PIN);
 
@@ -22,32 +22,32 @@ bool uart1_setup(void) {
     return true;
 }
 
-bool uart1_destruct(void) {
+bool uart1if_destruct(void) {
     usart_disable(USART1);
     rcc_periph_clock_disable(RCC_USART1);
     return true;
 }
 
-void uart1_writeByte(uint8_t data) {
+void uart1if_writeByte(uint8_t data) {
     usart_send_blocking(USART1, (uint16_t) data);
 }
 
-uint32_t uart1_writeBytes(uint8_t* data, const uint32_t len) {
+uint32_t uart1if_writeBytes(uint8_t* data, const uint32_t len) {
     uint32_t i;
     for (i = 0;  i < len; i++) {
-        uart1_writeByte(data[i]);
+        uart1if_writeByte(data[i]);
     }
     return i;
 }
 
-uint8_t uart1_readByte(void) {
+uint8_t uart1if_readByte(void) {
     return (uint8_t) usart_recv_blocking(USART1); 
 }
 
-uint32_t uart1_readBytes(uint8_t* data, const uint32_t len) {
+uint32_t uart1if_readBytes(uint8_t* data, const uint32_t len) {
     uint32_t i;
     for (i = 0; i < len; i++) {
-        data[i] = uart1_readByte();
+        data[i] = uart1if_readByte();
     }
     return i;
 }
@@ -56,5 +56,5 @@ uint32_t uart1_readBytes(uint8_t* data, const uint32_t len) {
 void _putchar(char character)
 {
     // send char to console etc.
-    uart1_writeByte((uint8_t) character);
+    uart1if_writeByte((uint8_t) character);
 }

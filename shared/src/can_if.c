@@ -4,7 +4,7 @@
 #include <libopencm3/cm3/nvic.h>
 
 #include "board_def.h"
-#include "can.h"
+#include "can_if.h"
 #include "log.h"
 
 static void receive(uint8_t fifo);
@@ -29,7 +29,7 @@ void cec_can_isr (void) {
  * @return true if success
  * @return false if fail
  */
-bool can_setup(void) {
+bool canif_setup(void) {
     log_pInfo("CAN Init");
 
     /* Initialise CAN GPIO ports */
@@ -96,7 +96,7 @@ bool can_setup(void) {
  * @param msgId can msg id
  * @return int8_t number of bytes sent, -1 for failure
  */
-int8_t can_sendCanMsg (canMsg_tu* msg, uint32_t msgId) {
+int8_t canif_sendCanMsg (canMsg_tu* msg, uint32_t msgId) {
     int8_t res;
     if (msgId == BB_CAN_ID_HEARTBEAT) {
         res = can_transmit(CAN1, msgId, false, false, CAN_HB_SIZE, msg->au8msg);
@@ -132,7 +132,7 @@ static void receive(uint8_t fifo) {
  * 
  * @return true if Data is ready, false otherwise
  */
-bool can_getDataReady(void) {
+bool canif_getDataReady(void) {
     return data_ready;
 }
 
@@ -141,7 +141,7 @@ bool can_getDataReady(void) {
  * 
  * @param[out] frame pointer to can frame
  */
-void can_getData(canFrame* frame) {
+void canif_getData(canFrame* frame) {
     data_ready = false;
     *frame = msg_buffer;
 }

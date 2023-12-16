@@ -5,10 +5,10 @@
 #include "common_defines.h"
 #include "board_def.h"
 #include "system.h"
-#include "uart.h"
 #include "log.h"
-#include "gpio.h"
-#include "can.h"
+#include "uart_if.h"
+#include "gpio_if.h"
+#include "can_if.h"
 
 /*
  * Global variables
@@ -45,14 +45,14 @@ int main (void) {
 }
 
 static void setup(void) {
-    while(!uart1_setup()) system_delayMs(1000);
-    while(!gpio_setup()) system_delayMs(1000);
-    while(!can_setup()) system_delayMs(1000);
+    while(!uart1if_setup()) system_delayMs(1000);
+    while(!gpioif_setup()) system_delayMs(1000);
+    while(!canif_setup()) system_delayMs(1000);
 
     log_pSuccess("Setup Completed");
 }
 static void destruct(void) {
-    uart1_destruct();
+    uart1if_destruct();
     system_systickDeinit();
 }
 

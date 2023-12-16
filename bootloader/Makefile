@@ -65,10 +65,10 @@ CSTD		?= -std=c99
 
 OBJS		+= $(SRC_DIR)/$(BINARY).o
 OBJS		+= $(SHARED_SRC_DIR)/system.o
-OBJS		+= $(SHARED_SRC_DIR)/uart.o
 OBJS		+= $(SHARED_SRC_DIR)/log.o
-OBJS		+= $(SHARED_SRC_DIR)/can.o
-OBJS		+= $(SHARED_SRC_DIR)/gpio.o
+OBJS		+= $(SHARED_SRC_DIR)/uart_if.o
+OBJS		+= $(SHARED_SRC_DIR)/can_if.o
+OBJS		+= $(SHARED_SRC_DIR)/gpio_if.o
 
 ###############################################################################
 # C flags
@@ -102,6 +102,7 @@ TGT_LDFLAGS		+= -T$(LDSCRIPT)
 TGT_LDFLAGS		+= $(ARCH_FLAGS) $(DEBUG)
 TGT_LDFLAGS		+= -Wl,-Map=$(*).map -Wl,--cref
 TGT_LDFLAGS		+= -Wl,--gc-sections
+TGT_LDFLAGS		+= -Xlinker -print-memory-usage -Xlinker
 ifeq ($(V),99)
 TGT_LDFLAGS		+= -Wl,--print-gc-sections
 endif

@@ -9,14 +9,14 @@
 #include "common_defines.h"
 #include "board_def.h"
 #include "system.h"
-#include "uart.h"
+#include "uart_if.h"
 #include "log.h"
-#include "gpio.h"
-#include "can.h"
+#include "gpio_if.h"
+#include "can_if.h"
 
 // Own Header Files
 #include "firmware.h"
-#include "i2c.h"
+#include "i2c_if.h"
 #include "ADS1115.h"
 #include "BQ34110.h"
 #include "SSD1306/ssd1306.h"
@@ -135,7 +135,7 @@ int main(void) {
             CAN_BattTimer = system_getTicks();
 
             encodeCanMsgBattStat();
-            can_sendCanMsg(&canBattMsg, BB_CAN_ID_BATT_STAT);
+            canif_sendCanMsg(&canBattMsg, BB_CAN_ID_BATT_STAT);
         }
 
         /* Send Board Stats via CAN */
@@ -144,14 +144,14 @@ int main(void) {
             CAN_BoardTimer = system_getTicks();
 
             encodeCanMsgBoardStat();
-            can_sendCanMsg(&canBoardMsg, BB_CAN_ID_PMB_STAT);
+            canif_sendCanMsg(&canBoardMsg, BB_CAN_ID_PMB_STAT);
         }
         
         /* Send Heartbeat via CAN */
         if (system_getTicks() - CAN_HbTimer > PMB_CAN_HB_MSG_INTVL) {
             log_pInfo("Sending Heartbeat via CAN");
             CAN_HbTimer = system_getTicks();
-            can_sendCanMsg(&canHbMsg, BB_CAN_ID_HEARTBEAT);
+            canif_sendCanMsg(&canHbMsg, BB_CAN_ID_HEARTBEAT);
         }
 
         /* Update Display */
@@ -165,10 +165,10 @@ int main(void) {
 
 static void setup(void) {
     /* HAL Setup */
-    while(!uart1_setup()) system_delayMs(1000);
-    while(!gpio_setup()) system_delayMs(1000);
-    while(!can_setup()) system_delayMs(1000);
-    while(!i2c_setup()) system_delayMs(1000);
+    while(!uart1if_setup()) system_delayMs(1000);
+    while(!gpioif_setup()) system_delayMs(1000);
+    while(!canif_setup()) system_delayMs(1000);
+    while(!i2cif_setup()) system_delayMs(1000);
 
     /* Driver Setup */
     ssd1306_Init();

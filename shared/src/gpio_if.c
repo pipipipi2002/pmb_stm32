@@ -2,11 +2,11 @@
 
 #include "board_def.h"
 
-#include "gpio.h"
+#include "gpio_if.h"
 #include "log.h"
 
 
-bool gpio_setup(void) {
+bool gpioif_setup(void) {
     log_pInfo("GPIO Init");
 
     /**

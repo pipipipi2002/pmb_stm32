@@ -1,5 +1,5 @@
-#ifndef INC_PMB_CAN_H
-#define INC_PMB_CAN_H
+#ifndef INC_PMB_CAN_IF_H
+#define INC_PMB_CAN_IF_H
 
 #include "common_defines.h"
 
@@ -94,9 +94,9 @@ typedef union {
 /*
  * Public facing interface
  */
-bool can_setup(void);
-int8_t can_sendCanMsg (canMsg_tu* msg, uint32_t msgId);
-bool can_getDataReady(void);
-void can_getData(canFrame* frame);
+bool canif_setup(void);
+int8_t canif_sendCanMsg (canMsg_tu* msg, uint32_t msgId);
+bool canif_getDataReady(void);
+void canif_getData(canFrame* frame);
 
-#endif // INC_PMB_CAN_H
+#endif // INC_PMB_CAN_IF_H
