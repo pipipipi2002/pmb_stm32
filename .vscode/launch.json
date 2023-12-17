@@ -65,6 +65,38 @@
             "runToEntryPoint": "main",
             "svdFile": "./.vscode/STM32F072x.svd",
             "preLaunchTask": "build_debug"
-            }
+            },
+            {
+              "name": "Open OCD Bootloader Debug",
+              "cwd": "${workspaceFolder}/bootloader",
+              "executable": "./bootloader.elf",
+              "request": "launch",
+              "type": "cortex-debug",
+              "servertype": "openocd",
+              "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f0x.cfg",
+              ],
+              "openOCDLaunchCommands": ["init", "reset init"],
+              "runToEntryPoint": "main",
+              "svdFile": "./.vscode/STM32F072x.svd",
+              "preLaunchTask": "build_bootloader"
+              },
+              {
+                "name": "Open OCD Bootloader Attach",
+                "cwd": "${workspaceFolder}/bootloader",
+                "executable": "./bootloader.elf",
+                "request": "attach",
+                "type": "cortex-debug",
+                "servertype": "openocd",
+                "configFiles": [
+                  "interface/stlink.cfg",
+                  "target/stm32f0x.cfg",
+                ],
+                "openOCDLaunchCommands": ["init", "reset init"],
+                "runToEntryPoint": "main",
+                "svdFile": "./.vscode/STM32F072x.svd"
+                }
+              
     ]
 }

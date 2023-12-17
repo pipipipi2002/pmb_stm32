@@ -6,7 +6,9 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/libopencm3/**"],
             "defines": [
-                "STM32F0"
+                "STM32F0",
+                "BOOTLOADER",
+                "MAINAPP"
             ],
             "compilerPath": "/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/bin/arm-none-eabi-gcc",
             "cStandard": "c99",

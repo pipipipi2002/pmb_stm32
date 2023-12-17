@@ -45,7 +45,7 @@ DEFS 		+= -I$(PRINTF_DIR)
 # Executables
 
 PREFIX		?= arm-none-eabi-
-
+APP_TYPE	:= -DMAINAPP
 CC			:= $(PREFIX)gcc
 CXX			:= $(PREFIX)g++
 LD			:= $(PREFIX)gcc
@@ -75,11 +75,12 @@ OBJS		+= $(SHARED_SRC_DIR)/log.o
 OBJS		+= $(SHARED_SRC_DIR)/uart_if.o
 OBJS		+= $(SHARED_SRC_DIR)/can_if.o
 OBJS		+= $(SHARED_SRC_DIR)/gpio_if.o
+OBJS		+= $(SHARED_SRC_DIR)/cqueue.o
 
 ###############################################################################
 # C flags
 
-TGT_CFLAGS	+= $(OPT) $(CSTD) $(DEBUG)
+TGT_CFLAGS	+= $(OPT) $(CSTD) $(DEBUG) $(APP_TYPE)
 TGT_CFLAGS	+= $(ARCH_FLAGS)
 TGT_CFLAGS	+= -Wextra -Wshadow -Wimplicit-function-declaration
 TGT_CFLAGS	+= -Wredundant-decls -Wmissing-prototypes -Wstrict-prototypes
@@ -88,7 +89,7 @@ TGT_CFLAGS	+= -fno-common -ffunction-sections -fdata-sections
 ###############################################################################
 # C++ flags
 
-TGT_CXXFLAGS	+= $(OPT) $(CXXSTD) $(DEBUG)
+TGT_CXXFLAGS	+= $(OPT) $(CXXSTD) $(DEBUG) $(APP_TYPE)
 TGT_CXXFLAGS	+= $(ARCH_FLAGS)
 TGT_CXXFLAGS	+= -Wextra -Wshadow -Wredundant-decls  -Weffc++
 TGT_CXXFLAGS	+= -fno-common -ffunction-sections -fdata-sections

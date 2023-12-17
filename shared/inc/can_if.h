@@ -5,13 +5,9 @@
 #include "can_defines.h"
 
 typedef struct {
-    uint32_t id;
-    bool ext_id;
-    bool rtr;
-    uint8_t filter_id;
+    uint32_t id;        // standard CAN frame
     uint8_t len;
     uint8_t data[8];
-    uint16_t ts;
 } canFrame_ts;
 
 /*
@@ -52,6 +48,6 @@ typedef union {
 bool canif_setup(void);
 int8_t canif_sendCanMsg (canMsg_tu* msg, uint8_t size, uint32_t msgId);
 bool canif_getRxDataReady(void);
-void canif_getRxData(canFrame_ts* frame);
+bool canif_getRxData(canFrame_ts* frame);
 
 #endif // INC_PMB_CAN_IF_H

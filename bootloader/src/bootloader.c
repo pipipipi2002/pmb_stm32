@@ -10,6 +10,9 @@
 #include "gpio_if.h"
 #include "can_if.h"
 
+#define CAN_ID_BOOTLOADER_SERVER        (40)
+#define BOOTLOADER_SERVER_JUMP_CMD      0xAA
+#define BOOTLOADER_SERVER_ECHO_CMD      0xBB
 /*
  * Global variables
  */
@@ -38,9 +41,30 @@ int main (void) {
     gpio_clear(PMB_PMOS_ON_GPIO_PORT, PMB_PMOS_ON_GPIO_PIN);    // Disable power to vehicle
     log_pInfo("Latch power to circuit, disable power to AUV4");
 
-    log_pInfo("Prepare to enter application");
-    destruct();
-    jumpToApplication();
+    while (1) {
+        canFrame_ts canframe;
+        log_pInfo("Waiting for command");
+        while (!canif_getRxDataReady()) {
+            system_delayMs(500);
+        }
+
+        canif_getRxData(&canframe);
+        if (canframe.id == CAN_ID_BOOTLOADER_SERVER) {
+            switch (canframe.data[0]) {
+                case BOOTLOADER_SERVER_JUMP_CMD:
+                    log_pInfo("Prepare to enter application");
+                    destruct();
+                    jumpToApplication();
+                    break;
+                case BOOTLOADER_SERVER_ECHO_CMD:
+                    log_pInfo("ECHO");
+                    break;
+                default:
+                    log_pError("Fall through default");
+            }
+        }
+
+    }
     return 0; // will not reach here
 }
 
