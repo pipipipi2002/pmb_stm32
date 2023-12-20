@@ -13,10 +13,14 @@
 #define CAN_ID_BOOTLOADER_SERVER        (40)
 #define BOOTLOADER_SERVER_JUMP_CMD      0xAA
 #define BOOTLOADER_SERVER_ECHO_CMD      0xBB
+
+#define WAIT_FOR_BOOT_SERVER_MS         (10000UL)
+
 /*
  * Global variables
  */
 uint64_t activityTimer = 0;
+
 
 /*
  * Internal Function Declarations
@@ -41,29 +45,39 @@ int main (void) {
     gpio_clear(PMB_PMOS_ON_GPIO_PORT, PMB_PMOS_ON_GPIO_PIN);    // Disable power to vehicle
     log_pInfo("Latch power to circuit, disable power to AUV4");
 
+    log_pInfo("Waiting for command");
+    activityTimer = system_getTicks();
     while (1) {
-        canFrame_ts canframe;
-        log_pInfo("Waiting for command");
-        while (!canif_getRxDataReady()) {
-            system_delayMs(500);
+        if (activityTimer + WAIT_FOR_BOOT_SERVER_MS < system_getTicks()) {
+            log_pInfo("Bootloader Server TIMEOUT");
+            log_pInfo("Prepare to enter application");
+            destruct();
+            jumpToApplication();
         }
 
-        canif_getRxData(&canframe);
-        if (canframe.id == CAN_ID_BOOTLOADER_SERVER) {
-            switch (canframe.data[0]) {
-                case BOOTLOADER_SERVER_JUMP_CMD:
-                    log_pInfo("Prepare to enter application");
-                    destruct();
-                    jumpToApplication();
-                    break;
-                case BOOTLOADER_SERVER_ECHO_CMD:
-                    log_pInfo("ECHO");
-                    break;
-                default:
-                    log_pError("Fall through default");
+        if (!canif_getRxDataReady()) {
+            system_delayMs(100);
+        } else {
+            canFrame_ts canframe;
+            canif_getRxData(&canframe);
+            if (canframe.id == CAN_ID_BOOTLOADER_SERVER) {
+                switch (canframe.data[0]) {
+                    case BOOTLOADER_SERVER_JUMP_CMD:
+                        log_pInfo("Prepare to enter application");
+                        destruct();
+                        jumpToApplication();
+                        break;
+                    case BOOTLOADER_SERVER_ECHO_CMD:
+                        log_pInfo("ECHO");
+                        break;
+                    default:
+                        log_pError("DATA INVALID %d", canframe.data[0]);
+                }
+            } else {
+                log_pError("ID INVALID %d", canframe.id);
             }
+            activityTimer = system_getTicks();
         }
-
     }
     return 0; // will not reach here
 }
