@@ -12,6 +12,10 @@
 #include "bootloader_defines.h"
 
 
+#ifndef BOOTLOADER
+    #error "BOOTLOADER OPTION NOT SELECTED"
+#endif
+
 /*
  * Global variables
  */
@@ -66,7 +70,7 @@ int main (void) {
                     log_pInfo("ECHO");
                     break;
                 default:
-                    log_pError("DATA INVALID %d", rxData);
+                    log_pError("DATA INVALID 0x%X", rxData);
             }
 
             activityTimer = system_getTicks();

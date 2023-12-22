@@ -97,7 +97,8 @@ bool canif_setup(void) {
 	 * Mask:	0b11110000
 	 * Effect:  Accept all IDs below 16
 	 */
-    can_filter_id_mask_16bit_init(1, 0x0F, 0xF0, 0x0F, 0xF0, 0, true);
+    const uint16_t id1 = (0b00001111 << 5);
+    const uint16_t mask1 = (0b11110000 << 5);
 
     /* ID 16 ~  goes to FIFO1
 	 * Filter configuration:
@@ -106,21 +107,31 @@ bool canif_setup(void) {
 	 * Effect:  Accept all. But since 0~15 will go into filter bank with higher priority,
 	 * only 16~ will go here
 	 */
-    can_filter_id_mask_16bit_init(2, 0x00, 0x00, 0x00, 0x00, 1, true);
+    const uint16_t id2 = 0;
+    const uint16_t mask2 = (0b11111111 << 5);
+
 #elif defined (BOOTLOADER) 
-    /* ID 0 ~ 15 goes to FIFO0 and FIFO1
+    /* ID 40-43 goes to FIFO0
 	 * Filter configuration:
 	 * ID: 		0b00101000
 	 * Mask:	0b11111100
 	 * Effect:  Accept only ID 40, 41, 42, 43
 	 */
-    can_filter_id_mask_16bit_init(1, 0x28, 0xFC, 0x28, 0xFC, 0, true);
-    can_filter_id_mask_16bit_init(2, 0x00, 0x00, 0x00, 0x00, 1, true);
-    // can_filter_id_mask_16bit_init(2, 0x28, 0xFC, 0x28, 0xFC, 1, true);
-
-#else 
-    #error "Please define firmware variant"
+    const uint16_t id1 = (0b00101000 << 5);
+    const uint16_t mask1 = (0b11111100 << 5);
+    
+    /* ID 0 ~ 15 goes to FIFO1
+	 * Filter configuration:
+	 * ID: 		0b00001111
+	 * Mask:	0b11110000
+	 * Effect:  Accept all IDs below 16
+	 */
+    const uint16_t id2 = (0b00001111 << 5);
+    const uint16_t mask2 = (0b11110000 << 5);
 #endif // Variant Switch
+
+    can_filter_id_mask_16bit_init(1, id1, mask1, id1, mask1, 0, true); // FIFO0
+    can_filter_id_mask_16bit_init(2, id2, mask2, id2, mask2, 1, true); // FIFO1
 
     log_pSuccess("CAN Init Sucessful");
     return true;

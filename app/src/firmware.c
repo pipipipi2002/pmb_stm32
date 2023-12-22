@@ -23,6 +23,10 @@
 #include "SSD1306/ssd1306.h"
 #include "SSD1306/ssd1306_fonts.h"
 
+#ifndef MAINAPP
+    #error "MAINAPP OPTION NOT SELECTED"
+#endif
+
 /*
  * Global Variables 
  */
@@ -119,7 +123,7 @@ int main(void) {
         }
 
         /* Update PMB and Battery Stats */
-        /*if (system_getTicks() - updateTimer > PMB_STATUS_UPDATE_INTVL) {
+        if (system_getTicks() - updateTimer > PMB_STATUS_UPDATE_INTVL) {
             log_pInfo("Updating internal data");
             updateTimer = system_getTicks();
             batt_status = BQ_GetBattStatus();
@@ -128,7 +132,7 @@ int main(void) {
             batt_voltage = BQ_GetVoltage();
             board_temperature = BQ_GetTemp();
             board_pressure = getPressure();
-        }*/
+        }
 
         /* Send Battery Stats via CAN */
         if (system_getTicks() - CAN_BattTimer > PMB_CAN_BATT_MSG_INTVL) {
