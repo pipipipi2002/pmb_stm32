@@ -1,0 +1,13 @@
+#ifndef INC_BOOTLOADER_DEFINES_H
+#define INC_BOOTLOADER_DEFINES_H
+
+#include "common_defines.h"
+
+#define CAN_ID_BOOTLOADER_SERVER        (40U)
+
+#define BOOTLOADER_SERVER_JUMP_CMD      0xAA
+#define BOOTLOADER_SERVER_ECHO_CMD      0xBB
+
+#define WAIT_FOR_BOOT_SERVER_MS         (10000UL)
+
+#endif // INC_BOOTLOADER_DEFINES_H

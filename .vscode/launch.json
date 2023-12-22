@@ -1,102 +1,116 @@
 {
-    "configurations": [
-        {
-            "name": "ST-Link: Debug Application",
-            "cwd": "${workspaceFolder}/app",
-            "executable": "./firmware.elf",
-            "servertype": "stutil",
-            "request": "launch",
-            "type": "cortex-debug",
-            "device": "STM32F072RB",
-            "runToEntryPoint": "main",
-            "interface": "swd",
-            "svdFile": "./.vscode/STM32F072x.svd",
-            "preLaunchTask": "build_debug"
-          },
-          {
-            "name": "ST-Link: Debug Bootloader",
-            "cwd": "${workspaceFolder}/bootloader",
-            "executable": "./bootloader.elf",
-            "servertype": "stutil",
-            "request": "launch",
-            "type": "cortex-debug",
-            "device": "STM32F072RB",
-            "runToEntryPoint": "main",
-            "interface": "swd",
-            "svdFile": "./.vscode/STM32F072x.svd",
-            "preLaunchTask": "build_bootloader"
-          },
-          {
-            "name": "ST-Link: Attach to Application",
-            "cwd": "${workspaceFolder}/app",
-            "executable": "./firmware.elf",
-            "servertype": "stutil",
-            "request": "attach",
-            "type": "cortex-debug",
-            "device": "STM32F072RB",
-            "runToEntryPoint": "main",
-            "interface": "swd",
-            "svdFile": "./.vscode/STM32F072x.svd"
-          },
-          {
-            "name": "ST-Link: Attach to Bootloader",
-            "cwd": "${workspaceFolder}/bootloader",
-            "executable": "./bootloader.elf",
-            "servertype": "stutil",
-            "request": "attach",
-            "type": "cortex-debug",
-            "device": "STM32F072RB",
-            "runToEntryPoint": "main",
-            "interface": "swd",
-            "svdFile": "./.vscode/STM32F072x.svd"
-          },
-          {
-            "name": "Open OCD Firmware Debug",
-            "cwd": "${workspaceFolder}/app",
-            "executable": "./firmware.elf",
-            "request": "launch",
-            "type": "cortex-debug",
-            "servertype": "openocd",
-            "configFiles": [
-              "interface/stlink.cfg",
-              "target/stm32f0x.cfg",
-            ],
-            "openOCDLaunchCommands": ["init", "reset init"],
-            "runToEntryPoint": "main",
-            "svdFile": "./.vscode/STM32F072x.svd",
-            "preLaunchTask": "build_debug"
-            },
-            {
-              "name": "Open OCD Bootloader Debug",
-              "cwd": "${workspaceFolder}/bootloader",
-              "executable": "./bootloader.elf",
-              "request": "launch",
-              "type": "cortex-debug",
-              "servertype": "openocd",
-              "configFiles": [
-                "interface/stlink.cfg",
-                "target/stm32f0x.cfg",
-              ],
-              "openOCDLaunchCommands": ["init", "reset init"],
-              "runToEntryPoint": "main",
-              "svdFile": "./.vscode/STM32F072x.svd",
-              "preLaunchTask": "build_bootloader"
-              },
-              {
-                "name": "Open OCD Bootloader Attach",
-                "cwd": "${workspaceFolder}/bootloader",
-                "executable": "./bootloader.elf",
-                "request": "attach",
-                "type": "cortex-debug",
-                "servertype": "openocd",
-                "configFiles": [
-                  "interface/stlink.cfg",
-                  "target/stm32f0x.cfg",
-                ],
-                "openOCDLaunchCommands": ["init", "reset init"],
-                "runToEntryPoint": "main",
-                "svdFile": "./.vscode/STM32F072x.svd"
-                }
-              
-    ]
+  "configurations": [
+    {
+      "name": "OOCD: Debug Firmware",
+      "cwd": "${workspaceFolder}/app",
+      "executable": "./firmware.elf",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "configFiles": [
+        "interface/stlink.cfg",
+        "target/stm32f0x.cfg",
+      ],
+      "openOCDLaunchCommands": ["init", "reset init"],
+      "runToEntryPoint": "main",
+      "svdFile": "./.vscode/STM32F072x.svd",
+      "preLaunchTask": "build_debug"
+    },
+    {
+      "name": "OOCD: Debug Bootloader",
+      "cwd": "${workspaceFolder}/bootloader",
+      "executable": "./bootloader.elf",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "configFiles": [
+        "interface/stlink.cfg",
+        "target/stm32f0x.cfg",
+      ],
+      "openOCDLaunchCommands": ["init", "reset init"],
+      "runToEntryPoint": "main",
+      "svdFile": "./.vscode/STM32F072x.svd",
+      "preLaunchTask": "build_bootloader"
+    },
+    {
+      "name": "OOCD: Attach Firmware",
+      "cwd": "${workspaceFolder}/app",
+      "executable": "./firmware.elf",
+      "request": "attach",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "configFiles": [
+        "interface/stlink.cfg",
+        "target/stm32f0x.cfg",
+      ],
+      "openOCDLaunchCommands": ["init", "reset init"],
+      "runToEntryPoint": "main",
+      "svdFile": "./.vscode/STM32F072x.svd"
+    },
+    {
+      "name": "OOCD: Attach Bootloader",
+      "cwd": "${workspaceFolder}/bootloader",
+      "executable": "./bootloader.elf",
+      "request": "attach",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "configFiles": [
+        "interface/stlink.cfg",
+        "target/stm32f0x.cfg",
+      ],
+      "openOCDLaunchCommands": ["init", "reset init"],
+      "runToEntryPoint": "main",
+      "svdFile": "./.vscode/STM32F072x.svd"
+    },
+    {
+      "name": "ST-Link: Debug Application",
+      "cwd": "${workspaceFolder}/app",
+      "executable": "./firmware.elf",
+      "servertype": "stutil",
+      "request": "launch",
+      "type": "cortex-debug",
+      "device": "STM32F072RB",
+      "runToEntryPoint": "main",
+      "interface": "swd",
+      "svdFile": "./.vscode/STM32F072x.svd",
+      "preLaunchTask": "build_debug"
+    },
+    {
+      "name": "ST-Link: Debug Bootloader",
+      "cwd": "${workspaceFolder}/bootloader",
+      "executable": "./bootloader.elf",
+      "servertype": "stutil",
+      "request": "launch",
+      "type": "cortex-debug",
+      "device": "STM32F072RB",
+      "runToEntryPoint": "main",
+      "interface": "swd",
+      "svdFile": "./.vscode/STM32F072x.svd",
+      "preLaunchTask": "build_bootloader"
+    },
+    {
+      "name": "ST-Link: Attach to Application",
+      "cwd": "${workspaceFolder}/app",
+      "executable": "./firmware.elf",
+      "servertype": "stutil",
+      "request": "attach",
+      "type": "cortex-debug",
+      "device": "STM32F072RB",
+      "runToEntryPoint": "main",
+      "interface": "swd",
+      "svdFile": "./.vscode/STM32F072x.svd"
+    },
+    {
+      "name": "ST-Link: Attach to Bootloader",
+      "cwd": "${workspaceFolder}/bootloader",
+      "executable": "./bootloader.elf",
+      "servertype": "stutil",
+      "request": "attach",
+      "type": "cortex-debug",
+      "device": "STM32F072RB",
+      "runToEntryPoint": "main",
+      "interface": "swd",
+      "svdFile": "./.vscode/STM32F072x.svd"
+    } 
+  ]
 }

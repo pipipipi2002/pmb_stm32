@@ -9,12 +9,12 @@
 #include "uart_if.h"
 #include "gpio_if.h"
 #include "can_if.h"
+#include "bootloader_defines.h"
 
-#define CAN_ID_BOOTLOADER_SERVER        (40)
-#define BOOTLOADER_SERVER_JUMP_CMD      0xAA
-#define BOOTLOADER_SERVER_ECHO_CMD      0xBB
 
-#define WAIT_FOR_BOOT_SERVER_MS         (10000UL)
+#ifndef BOOTLOADER
+    #error "BOOTLOADER OPTION NOT SELECTED"
+#endif
 
 /*
  * Global variables
@@ -58,24 +58,21 @@ int main (void) {
         if (!canif_getRxDataReady()) {
             system_delayMs(100);
         } else {
-            canFrame_ts canframe;
-            canif_getRxData(&canframe);
-            if (canframe.id == CAN_ID_BOOTLOADER_SERVER) {
-                switch (canframe.data[0]) {
-                    case BOOTLOADER_SERVER_JUMP_CMD:
-                        log_pInfo("Prepare to enter application");
-                        destruct();
-                        jumpToApplication();
-                        break;
-                    case BOOTLOADER_SERVER_ECHO_CMD:
-                        log_pInfo("ECHO");
-                        break;
-                    default:
-                        log_pError("DATA INVALID %d", canframe.data[0]);
-                }
-            } else {
-                log_pError("ID INVALID %d", canframe.id);
+            uint8_t rxData;
+            canif_getRxData(&rxData);
+            switch (rxData) {
+                case BOOTLOADER_SERVER_JUMP_CMD:
+                    log_pInfo("Prepare to enter application");
+                    destruct();
+                    jumpToApplication();
+                    break;
+                case BOOTLOADER_SERVER_ECHO_CMD:
+                    log_pInfo("ECHO");
+                    break;
+                default:
+                    log_pError("DATA INVALID 0x%X", rxData);
             }
+
             activityTimer = system_getTicks();
         }
     }

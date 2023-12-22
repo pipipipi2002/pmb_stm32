@@ -48,6 +48,6 @@ typedef union {
 bool canif_setup(void);
 int8_t canif_sendCanMsg (canMsg_tu* msg, uint8_t size, uint32_t msgId);
 bool canif_getRxDataReady(void);
-bool canif_getRxData(canFrame_ts* frame);
+bool canif_getRxData(uint8_t* frame);
 
 #endif // INC_PMB_CAN_IF_H
