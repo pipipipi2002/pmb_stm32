@@ -13,7 +13,18 @@ Another reason for this project is to learn Rust. The master branch shall be kep
 - RTOS
 - RUST
 
+
 # Setup
+Pre-reqs
+- git
+- ARM GNU Toolchain
+- Make
+- Python
+- Conda
+- OpenOCD
+- ST-Utils
+- VSCODE: Cortex Debug extension
+
 ```bash
 git clone https://github.com/pipipipi2002/pmb_stm32
 git submodule init

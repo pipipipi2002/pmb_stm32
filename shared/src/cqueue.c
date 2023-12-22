@@ -7,8 +7,11 @@
  * @param buff Pointer to supplied buffer
  * @param buff_size Buffer size supplied
  */
-void cqueue_init(cqueue_ts* q, canFrame_ts* buff, uint32_t buff_size) {
+void cqueue_init(cqueue_ts* q, uint8_t* buff, uint32_t buff_size) {
     q->data = buff;
+    for (uint32_t i = 0; i < buff_size; i++) {
+        q->data[i] = 0;
+    }
     q->data_max_size = buff_size;
     q->head = 0;
     q->tail = 0;
@@ -51,8 +54,25 @@ uint32_t cqueue_getSize(cqueue_ts* q) {
  * @param q pointer to queue
  * @return uint8_t data at the top
  */
-canFrame_ts cqueue_peek(cqueue_ts* q) {
+uint8_t cqueue_peek(cqueue_ts* q) {
     return q->data[q->head];
+}
+
+/**
+ * @brief Push n frame of data into the queue
+ * 
+ * @param q pointer to queue
+ * @param data data byte array to push
+ * @param len length of data byte to push
+ * @return uint8_t number of data byte pushed
+ */
+uint8_t cqueue_pushn(cqueue_ts* q, uint8_t* data, uint8_t len) {
+    for (uint8_t i = 0; i < len; i++) {
+        if (!cqueue_push(q, data[i])) {
+            return i;
+        }
+    }
+    return len;
 }
 
 /**
@@ -63,12 +83,12 @@ canFrame_ts cqueue_peek(cqueue_ts* q) {
  * @return true if successful
  * @return false if queue is full
  */
-bool cqueue_push(cqueue_ts* q, canFrame_ts* data) {
+bool cqueue_push(cqueue_ts* q, uint8_t data) {
     if (cqueue_isFull(q)) {
         return false;
     }
 
-    q->data[q->tail++] = *data;
+    q->data[q->tail++] = data;
     q->tail %= q->data_max_size;
     q->size++;
     return true;
@@ -82,7 +102,7 @@ bool cqueue_push(cqueue_ts* q, canFrame_ts* data) {
  * @return true if successful
  * @return false if queue is empty
  */
-bool cqueue_pop(cqueue_ts* q, canFrame_ts* data) {
+bool cqueue_pop(cqueue_ts* q, uint8_t* data) {
     if (cqueue_isEmpty(q)) {
         return false;
     }

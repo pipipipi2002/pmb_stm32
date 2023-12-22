@@ -2,6 +2,10 @@
 import can
 from canine import CANineBus
 
+BOOTLOADER_SERVER_ID = 40
+CMD_JUMP = 0xAA
+CMD_ECHO = 0xBB
+
 def send_one(opt):
     """Sends a single message."""
 
@@ -11,11 +15,11 @@ def send_one(opt):
 
         if opt == 2: # Echo
             msg = can.Message(
-                arbitration_id=40, data=[0xBB], is_extended_id=False
+                arbitration_id=BOOTLOADER_SERVER_ID, data=[CMD_ECHO], is_extended_id=False
             )
         elif opt == 1: # Jump to Main
             msg = can.Message(
-                arbitration_id=40, data=[0xAA], is_extended_id=False
+                arbitration_id=BOOTLOADER_SERVER_ID, data=[CMD_JUMP], is_extended_id=False
             )
         # data_bank = [0xAA]
         # for i in data_bank:

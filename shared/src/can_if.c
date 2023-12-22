@@ -8,11 +8,23 @@
 #include "cqueue.h"
 #include "log.h"
 
-#define CAN_QUEUE_BUFFER_SIZE (64)          // 512 Bytes of data (excluding frame overheads)
 static void canif_receive(uint8_t fifo);
 
-static canFrame_ts msg_buffer[CAN_QUEUE_BUFFER_SIZE]; 
-static cqueue_ts circular_buff = {0};
+#if defined (BOOTLOADER)
+#include "bootloader_defines.h"
+
+#define BOOT_SERVER_MSG_QUEUE_BUFFER_SIZE       (64)
+
+static uint8_t rxBootServerBuffer[BOOT_SERVER_MSG_QUEUE_BUFFER_SIZE];
+static cqueue_ts cq_rxCanBootServer = {0};
+
+#elif defined (MAINAPP)
+#define VEH_MSG_QUEUE_BUFFER_SIZE               (32)
+
+static uint8_t rxVehBuffer[VEH_MSG_QUEUE_BUFFER_SIZE];
+static cqueue_ts cq_rxCanVehMsg = {0};
+
+#endif // Variant Switch
 
 void cec_can_isr (void) {
     // Message pending on FIFO 0?
@@ -35,7 +47,11 @@ bool canif_setup(void) {
     log_pInfo("CAN Init");
 
     /* Initialise Queue for RX */
-    cqueue_init(&circular_buff, msg_buffer, CAN_QUEUE_BUFFER_SIZE);
+    #if defined (BOOTLOADER)
+    cqueue_init(&cq_rxCanBootServer, rxBootServerBuffer, BOOT_SERVER_MSG_QUEUE_BUFFER_SIZE);
+    #elif defined (MAINAPP)
+    cqueue_init(&cq_rxCanVehMsg, rxVehBuffer, VEH_MSG_QUEUE_BUFFER_SIZE);
+    #endif // Variant Switch
 
     /* Initialise CAN GPIO ports */
     gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, PMB_CAN_RX_PIN | PMB_CAN_TX_PIN);
@@ -141,18 +157,37 @@ static void canif_receive(uint8_t fifo) {
                 rxFrame.data,
                 &ts);
 
-    if (!cqueue_push(&circular_buff, &rxFrame)) {
-        log_pError("Queue FULL");
+    #if defined (BOOTLOADER)
+    switch (rxFrame.id) {
+        case CAN_ID_BOOTLOADER_SERVER:
+            uint8_t recv = cqueue_pushn(&cq_rxCanBootServer, rxFrame.data, rxFrame.len);
+            if (recv != rxFrame.len) {
+                log_pError("CAN Queue Full, dropped %d msgs.", rxFrame.len - recv);
+            }
+            break;
+        default:
+            log_pError("Invalid CAN ID received: %d", rxFrame.id);
+            break;
     }
+    #elif defined (MAINAPP)
+    uint8_t recv = cqueue_pushn(&cq_rxCanVehMsg, rxFrame.data, rxFrame.len);
+    if (recv != rxFrame.len) {
+        log_pError("CAN Queue Full, dropped %d msgs.", rxFrame.len - recv);
+    }
+    #endif // Variant Switch
 }
 
 /**
- * @brief Getter function for Data Ready Flag
+ * @brief Getter function for Data Ready
  * 
  * @return true if Data is ready, false otherwise
  */
 bool canif_getRxDataReady(void) {
-    return !cqueue_isEmpty(&circular_buff);
+    #if defined (BOOTLOADER)
+    return !cqueue_isEmpty(&cq_rxCanBootServer);
+    #elif defined (MAINAPP)
+    return !cqueue_isEmpty(&cq_rxCanVehMsg);
+    #endif // Variant Switch
 }
 
 /**
@@ -161,10 +196,16 @@ bool canif_getRxDataReady(void) {
  * @param[out] frame pointer to can frame
  * @return true if data copied successfully
  */
-bool canif_getRxData(canFrame_ts* frame) {
-    if (cqueue_pop(&circular_buff, frame)) {
+bool canif_getRxData(uint8_t* data) {
+    #if defined (BOOTLOADER)
+    if (cqueue_pop(&cq_rxCanBootServer, data)) {
         return true;
     }
+    #elif defined (MAINAPP)
+    if (cqueue_pop(&cq_rxCanVehMsg, data)) {
+        return true;
+    }
+    #endif // Variant Switch
     
     log_pError("Queue Empty");
     return false;
