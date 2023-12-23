@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./libopencm3
-          key: ${{ runner.os }}-libopencm3
+          key: ${{ runner.os }}-libopencm3-${{hashFiles('./libopencm3/**')}}
 
       - name: Build LibOpenCm3
         if: steps.cache-libopencm3.outputs.cache-hit != 'true'
