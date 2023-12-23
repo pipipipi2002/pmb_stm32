@@ -12,7 +12,7 @@
 #include "bootloader_defines.h"
 
 
-#ifndef MAINAPP
+#ifndef BOOTLOADER
     #error "BOOTLOADER OPTION NOT SELECTED"
 #endif
 
