@@ -16,5 +16,5 @@ with open(BOOTLOADER_FILE, "rb") as f:
     check_file = f.read()
     f.close
 
-if (len(check_file) == BOOTLOADER_SIZE):
-    raise Exception(f"Bootloader size not padded properly. \n\t Size aft padding: {len(check_file)}.  \n\t Target size: {BOOTLOADER_SIZE}")
+if (len(check_file) != BOOTLOADER_SIZE):
+    raise Exception(f"Bootloader size not padded properly. \n\t Size aft padding: {len(check_file)}.  \n\t Target size: {BOOTLOADER_SIZE}.")
