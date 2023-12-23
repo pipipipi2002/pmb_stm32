@@ -35,6 +35,10 @@ jobs:
         working-directory: ./bootloader
         run: make V=1
 
+      - name: Check Bootloader size on ${{ matrix.os }}
+        working-directory: ./bootloader
+        run: ls -lB bootloader.bin
+
       - name: Building Main Application on ${{ matrix.os }}
         working-directory: ./app
         run: make V=1
