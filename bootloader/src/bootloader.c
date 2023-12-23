@@ -51,6 +51,8 @@ int main (void) {
         if (activityTimer + WAIT_FOR_BOOT_SERVER_MS < system_getTicks()) {
             log_pInfo("Bootloader Server TIMEOUT");
             log_pInfo("Prepare to enter application");
+            log_pInfo("wowowow plies fail me");
+            log_pInfo("lmao");
             destruct();
             jumpToApplication();
         }
