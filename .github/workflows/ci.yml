@@ -1,0 +1,36 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request: 
+    paths-ignore:
+      - '**/*.md'
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Arm GNU Toolchain (arm-none-eabi-gcc) on ${{ matrix.os }}
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '12.3.Rel1' 
+      
+      - name: Check ARM GCC version on ${{ matrix.os }}
+        run: arm-none-eabi-gcc --version
+
+      - name: Building Bootloader on ${{ matrix.os }}
+        working-directory: ./bootloader
+        run: make V=1
+
+      - name: Building Main Application on ${{ matrix.os }}
+        working-directory: ./app
+        run: make V=1
+
+
