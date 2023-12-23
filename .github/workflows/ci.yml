@@ -16,6 +16,8 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
       
       - name: Install Arm GNU Toolchain (arm-none-eabi-gcc) on ${{ matrix.os }}
         uses: carlosperate/arm-none-eabi-gcc-action@v1
@@ -24,6 +26,10 @@ jobs:
       
       - name: Check ARM GCC version on ${{ matrix.os }}
         run: arm-none-eabi-gcc --version
+
+      - name: Build LibOpenCM3
+        working-directory: ./libopencm3
+        run: make
 
       - name: Building Bootloader on ${{ matrix.os }}
         working-directory: ./bootloader
