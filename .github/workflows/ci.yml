@@ -44,10 +44,10 @@ jobs:
 
       - name: Building Bootloader on ${{ matrix.os }}
         working-directory: ./bootloader
-        run: make V=1
+        run: make clean && make
 
       - name: Building Main Application on ${{ matrix.os }}
         working-directory: ./app
-        run: make V=1
+        run: make clean && make
 
 
