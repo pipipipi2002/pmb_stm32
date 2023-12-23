@@ -30,7 +30,15 @@ jobs:
       - name: Check Python version on ${{ matrix.os }}
         run: python --version
 
-      - name: Build LibOpenCM3
+      - name: Cache LibOpenCm3
+        id: cache-libopencm3
+        uses: actions/cache@v3
+        with:
+          path: ./libopencm3
+          key: ${{ runner.os }}-libopencm3
+
+      - name: Build LibOpenCm3
+        if: steps.cache-libopencm3.outputs.cache-hit != 'true'
         working-directory: ./libopencm3
         run: make
 
