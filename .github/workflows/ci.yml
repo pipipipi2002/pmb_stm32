@@ -35,19 +35,19 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/libopencm3
-          key: ${{ runner.os }}-libopencm3-${{hashFiles('./libopencm3/**')}}
+          key: ${{ runner.os }}-libopencm3
 
       - name: Build LibOpenCm3
         if: steps.cache-libopencm3.outputs.cache-hit != 'true'
-        working-directory: ./libopencm3
+        working-directory: ~/libopencm3
         run: make
 
       - name: Building Bootloader on ${{ matrix.os }}
-        working-directory: ./bootloader
+        working-directory: ~/bootloader
         run: make clean && make
 
       - name: Building Main Application on ${{ matrix.os }}
-        working-directory: ./app
+        working-directory: ~/app
         run: make clean && make
 
 
