@@ -27,6 +27,9 @@ jobs:
       - name: Check ARM GCC version on ${{ matrix.os }}
         run: arm-none-eabi-gcc --version
 
+      - name: Check Python version on ${{ matrix.os }}
+        run: python --version
+
       - name: Build LibOpenCM3
         working-directory: ./libopencm3
         run: make
@@ -34,10 +37,6 @@ jobs:
       - name: Building Bootloader on ${{ matrix.os }}
         working-directory: ./bootloader
         run: make V=1
-
-      - name: Check Bootloader size on ${{ matrix.os }}
-        working-directory: ./bootloader
-        run: ls -lB bootloader.bin
 
       - name: Building Main Application on ${{ matrix.os }}
         working-directory: ./app
