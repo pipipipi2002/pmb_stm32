@@ -46,8 +46,9 @@ typedef union {
  * Public facing interface
  */
 bool canif_setup(void);
-int8_t canif_sendCanMsg (canMsg_tu* msg, uint8_t size, uint32_t msgId);
+int8_t canif_sendVehMsg (canMsg_tu* msg, uint8_t size, uint32_t msgId);
+uint8_t canif_sendData (uint8_t* data, uint8_t size, uint32_t id);
 bool canif_getRxDataReady(void);
-bool canif_getRxData(uint8_t* frame);
+bool canif_getRxData(uint8_t* data);
 
 #endif // INC_PMB_CAN_IF_H

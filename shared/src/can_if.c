@@ -138,14 +138,41 @@ bool canif_setup(void) {
 };
 
 /**
- * @brief Send can message based on the defined can format.
+ * @brief Send can message based on the defined can format. 
  * 
  * @param msg pointer to the msg to be sent
+ * @param size bytes of data to send. Maximum 8.
  * @param msgId can msg id
  * @return int8_t number of bytes sent, -1 for failure
  */
-int8_t canif_sendCanMsg (canMsg_tu* msg, uint8_t size, uint32_t msgId) {
+int8_t canif_sendVehMsg (canMsg_tu* msg, uint8_t size, uint32_t msgId) {
     int8_t res = can_transmit(CAN1, msgId, false, false, size, msg->au8msg); // Non blocking tx
+    return res;
+}
+
+/**
+ * @brief Send can message with no limitation on bytes length (<255)
+ * 
+ * @param data pointer to the data buffer
+ * @param size size of the data byte to send
+ * @param id can id destination
+ * @return int8_t number of bytes sent
+ */
+
+uint8_t canif_sendData (uint8_t* data, uint8_t size, uint32_t id) {
+    uint8_t bytesSent = 0;
+    uint8_t res = 0;
+
+    while (size - bytesSent >= 8) {
+        /* Send full 8 bytes */
+        res += can_transmit(CAN1, id, false, false, 8, &(data[bytesSent]));
+        bytesSent += 8;
+    }
+    if (bytesSent == size) {
+        /* Send remaining bytes */
+        res += can_transmit(CAN1, id, false, false, (size - bytesSent), &(data[bytesSent]));
+    }
+
     return res;
 }
 

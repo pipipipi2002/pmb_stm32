@@ -140,7 +140,7 @@ int main(void) {
             CAN_BattTimer = system_getTicks();
 
             encodeCanMsgBattStat();
-            canif_sendCanMsg(&canBattMsg, BB_CAN_STD_MSG_SIZE, BB_CAN_ID_BATT_STAT);
+            canif_sendVehMsg(&canBattMsg, BB_CAN_STD_MSG_SIZE, BB_CAN_ID_BATT_STAT);
         }
 
         /* Send Board Stats via CAN */
@@ -149,14 +149,14 @@ int main(void) {
             CAN_BoardTimer = system_getTicks();
 
             encodeCanMsgBoardStat();
-            canif_sendCanMsg(&canBoardMsg, BB_CAN_STD_MSG_SIZE, BB_CAN_ID_PMB_STAT);
+            canif_sendVehMsg(&canBoardMsg, BB_CAN_STD_MSG_SIZE, BB_CAN_ID_PMB_STAT);
         }
         
         /* Send Heartbeat via CAN */
         if (system_getTicks() - CAN_HbTimer > PMB_CAN_HB_MSG_INTVL) {
             log_pInfo("Sending Heartbeat via CAN");
             CAN_HbTimer = system_getTicks();
-            canif_sendCanMsg(&canHbMsg, BB_CAN_HB_MSG_SIZE, BB_CAN_ID_HEARTBEAT);
+            canif_sendVehMsg(&canHbMsg, BB_CAN_HB_MSG_SIZE, BB_CAN_ID_HEARTBEAT);
         }
 
         /* Update Display */

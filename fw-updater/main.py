@@ -31,7 +31,7 @@ def send(opt):
 
         try:
             bus.send(msg)
-            print(f"Message sent on {bus.channel_info}")
+            print(f"Message sent to {BOOTLOADER_SERVER_ID}")
         except can.CanError:
             print("Message NOT sent")
 
