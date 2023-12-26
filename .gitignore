@@ -3,3 +3,5 @@
 *.map
 *.o
 *.d
+*.pyc
+__pycache__

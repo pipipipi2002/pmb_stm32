@@ -27,7 +27,9 @@
         "crc_v2.h": "c",
         "crc_if.h": "c",
         "crc_common_all.h": "c",
-        "bootloader_defines.h": "c"
+        "bootloader_defines.h": "c",
+        "string_view": "c",
+        "regex": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/bin/"

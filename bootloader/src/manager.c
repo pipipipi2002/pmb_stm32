@@ -26,7 +26,7 @@ static uint8_t packetReadIndex = 0;
 static uint8_t packetBufferLength = 0;
 
 static bool isUtilityPacket(const man_packet_ts* packet, uint8_t data) {
-    if (packet->lenType != 1) {
+    if (packet->lenType != 0b00000110) {
         return false;
     }
     if (packet->data[0] != data) {
@@ -68,6 +68,7 @@ void man_update(void) {
             case MAN_STATE_LENGTHTYPE: {
                 /* Get Length+Type Byte */
                 canif_getRxData(&(tempPacket.lenType));
+                log_pInfo("Received LenType");
                 state = MAN_STATE_DATA;
             } break;
 
@@ -79,6 +80,7 @@ void man_update(void) {
                 if (dataBytesReceived >= PACKET_DATA_SIZE) {
                     dataBytesReceived = 0;
                     state = MAN_STATE_CRC;
+                    log_pInfo("Received Data");
                 }
             } break;
 
@@ -88,11 +90,12 @@ void man_update(void) {
 
                 if (crcBytesReceived >= PACKET_CRC_SIZE) {
                     crcBytesReceived = 0;
+                    log_pInfo("Received CRC");
                 } else {
                     /* Continue receiving CRC bytes */
                     break;
                 }
-                
+
                 /* Construct CRC from the bytes received */
                 tempPacket.crc = recvCrc[0] | (recvCrc[1] << 8) | (recvCrc[2] << 16) | (recvCrc[3] << 24); // Little endian
                 
@@ -102,10 +105,12 @@ void man_update(void) {
                 /* Check CRC */
                 if (computedCrc != tempPacket.crc) {
                     /* Request Retransmission */
+                    log_pError("CRC mismatch, recv: 0x%X, computed: 0x%X", tempPacket.crc, computedCrc);
                     man_write(&retxPacket);
                     state = MAN_STATE_LENGTHTYPE;
                     break;
                 }
+                log_pInfo ("CRC Match");
 
                 /* Handle Packet based on its Type */
                 uint8_t packetType = (uint8_t)(tempPacket.lenType & PACKET_TYPE_MASK);
@@ -116,6 +121,7 @@ void man_update(void) {
                             log_pError("Packet Buffer Full, dropping packet");
                             break;
                         }
+                        log_pSuccess("Received one Normal Packet");
 
                         /* Write into buffer */
                         copyPacket(&tempPacket, &(packetBuffer[packetWriteIndex++]));
@@ -124,14 +130,17 @@ void man_update(void) {
 
                         /* Send acknowledge packet */
                         man_write(&ackPacket);
+                        log_pInfo("Send ACK packet");
 
                     } break;
                     
                     case PACKET_TYPE_UTILITY: {
                         /* Check Utility Type */
                         if (isUtilityPacket(&tempPacket, PACKET_UTILITY_RETX_DATA)) { // Retx
+                            log_pInfo("Received Retx");
                             man_write(&lastTxPacket);
                         } else if (isUtilityPacket(&tempPacket, PACKET_UTILITY_ACK_DATA)) { // ACK
+                            log_pInfo("Received ACK");
                             break;
                         } else {
                             log_pError("Received unknown utility data: %X", tempPacket.data[0]); // Undefined
@@ -160,7 +169,7 @@ bool man_packetAvailable(void) {
 
 void man_write(man_packet_ts* packet) {
     /* Send data in CAN */
-    canif_sendData((uint8_t*)packet, PACKET_TOTAL_SIZE, CAN_ID_BOOTLOADER_SERVER);
+    canif_sendData((uint8_t*)packet, PACKET_TOTAL_SIZE, CAN_ID_BOOTLOADER_PMB);
     /* Store to last transmitted buffer */
     copyPacket(packet, &lastTxPacket);
 }

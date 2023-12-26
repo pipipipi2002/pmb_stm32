@@ -6,7 +6,7 @@
 #define PACKET_BUFFER_LENGTH        (8U)
 
 #define PACKET_LENTYPE_SIZE         (1U)
-#define PACKET_DATA_SIZE            (16U)
+#define PACKET_DATA_SIZE            (19U)
 #define PACKET_CRC_SIZE             (4U)
 #define PACKET_TOTAL_SIZE           (PACKET_LENTYPE_SIZE + PACKET_DATA_SIZE + PACKET_CRC_SIZE)
 
