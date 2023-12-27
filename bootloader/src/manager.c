@@ -87,7 +87,7 @@ void man_update(void) {
                 /* Check CRC */
                 if (computedCrc != tempPacket.crc) {
                     /* Request Retransmission */
-                    log_pError("CRC mismatch, recv: 0x%X, computed: 0x%X", tempPacket.crc, computedCrc);
+                    log_pError("CRC mismatch, recv: 0x%X, computed: 0x%X. Send ReTx Packet", tempPacket.crc, computedCrc);
                     man_write(&retxPacket);
                     state = MAN_STATE_LENGTHTYPE;
                     break;
@@ -119,7 +119,7 @@ void man_update(void) {
                     case PACKET_TYPE_UTILITY: {
                         /* Check Utility Type */
                         if (isUtilityPacket(&tempPacket, PACKET_UTILITY_RETX_DATA)) { // Retx
-                            log_pInfo("Received Retx");
+                            log_pInfo("Received Retx, send last tx");
                             man_write(&lastTxPacket);
                         } else if (isUtilityPacket(&tempPacket, PACKET_UTILITY_ACK_DATA)) { // ACK
                             log_pInfo("Received ACK");

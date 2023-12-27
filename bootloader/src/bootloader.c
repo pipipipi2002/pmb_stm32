@@ -58,6 +58,7 @@ int main (void) {
     log_pInfo("CRC: %d", packet.crc);
     man_write(&packet);
 
+    #ifndef NO_JUMP
     activityTimer = system_getTicks();
     while (1) {
         if (activityTimer + WAIT_FOR_BOOT_SERVER_MS < system_getTicks()) {
@@ -66,8 +67,6 @@ int main (void) {
             destruct();
             jumpToApplication();
         }
-
-        man_update();
 
         if (!canif_getRxDataReady()) {
             system_delayMs(100);
@@ -86,8 +85,13 @@ int main (void) {
                 default:
                     log_pError("DATA INVALID 0x%X", rxData);
             }
-            activityTimer = system_getTicks();
+           activityTimer = system_getTicks();
         }
+    #else
+    while (1) {
+        man_update();
+    }
+    #endif // NO_JUMP
     }
     return 0; // will not reach here
 }
