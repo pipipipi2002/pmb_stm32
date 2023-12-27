@@ -213,7 +213,7 @@ static bool isUtilityPacket(const man_packet_ts* packet, const uint8_t data) {
 static void createUtilityPacket(man_packet_ts* packet, uint8_t data) {
     packet->lenType = PACKET_CONSTRUCT_LENGTHTYPE(1, PACKET_TYPE_UTILITY);
     packet->data[0] = data;
-    for (uint8_t i = 0; i < PACKET_DATA_SIZE; i++) {
+    for (uint8_t i = 1; i < PACKET_DATA_SIZE-1; i++) {
         packet->data[i] = 0xFF;
     }
     packet->crc = crcif_compute32((uint8_t *) packet, (PACKET_TOTAL_SIZE - PACKET_CRC_SIZE));

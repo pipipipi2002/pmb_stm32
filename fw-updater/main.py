@@ -196,8 +196,10 @@ async def fwUpdatorRoutine(bus, queue):
             
             # Run FW state machine
             print(packet)
-
+            tempPacket = Packet(bytes([0b01001101]), bytearray([0x23] * 19), None)
+            sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, tempPacket)
             queue.task_done()
+           
     except asyncio.CancelledError:
         log.debug("FW Updator Cancelled. Cleaning up.")
 
@@ -238,7 +240,7 @@ async def recvRoutine(bus, reader, queue):
                             continue
 
                         # Ack packet
-                        if (packet.isRetxPacket()):
+                        if (packet.isAckPacket()):
                             log.debug("Received ACK Packet")
                             continue
 
@@ -270,7 +272,7 @@ async def main():
         task2 = asyncio.create_task(fwUpdatorRoutine(bus, packet_queue))
         try:
             await asyncio.gather(task1, task2)
-        except:
+        except KeyboardInterrupt:
             notifier.stop()
             global shutdown_flag
             shutdown_flag = True
