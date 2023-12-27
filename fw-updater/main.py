@@ -7,12 +7,7 @@ import sys
 from canine import CANineBus
 from time import sleep
 from logging.handlers import TimedRotatingFileHandler
-from can.notifier import MessageRecipient
 import asyncio
-from signal import signal, SIGINT
-from sys import exit
-
-from asyncio import Future
 
 CAN_BOOTLOADER_SERVER_ID = 40
 CAN_BOOTLOADER_PMB_ID = 41
@@ -37,7 +32,7 @@ SLEEP_TIME = 0.1 # interval between can frames
 FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 LOG_FILE = "fw-updater.log"
 
-shutdown = False
+shutdown_flag = False
 
 def get_console_handler():
    console_handler = logging.StreamHandler(sys.stdout)
@@ -194,174 +189,98 @@ def readFromBuffer(n: int) -> bytearray:
     return bytearray(removed)
 
 
-# async def packetConstructor(bus, reader):
-#     while (True):
-#         try: 
-#         # wait for reader to have message
-#             msg = await asyncio.wait_for(reader.get_message(), timeout=1.0)
-
-#             if (msg.arbitration_id == CAN_BOOTLOADER_PMB_ID):
-#                 log.debug("Received CAN from PMB")
-#                 rxCanBuffer = rxCanBuffer + msg.data
-                
-#                 # Try to build a Packet
-#                 if (len(rxCanBuffer) >= PACKET_TOTAL_SIZE):
-#                     # Extract data from buffer
-#                     rawBytes: bytearray = readFromBuffer(PACKET_TOTAL_SIZE) 
-
-#                     lenType = bytes(rawBytes[0])
-#                     data = rawBytes[1:17]
-#                     crc = rawBytes[17:]
-
-#                     packet = Packet(lenType, data, crc)
-#                     computedCrc = packet.computeCrc()
-
-#                     # Need Retransmission
-#                     if (computedCrc != packet.crc):
-#                         log.error(f"Wrong CRC! Received: {packet.getCrc()}, Computed: {int.from_bytes(computedCrc, "little")}")
-#                         log.debug("Sending ReTx Packet")
-#                         sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, retxPacket) 
-#                         continue
-
-#                     # Retransmission packet
-#                     if (packet.isRetxPacket()):
-#                         log.debug("Received ReTx Packet, Retransmitting last packet")
-#                         sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, lastTxPacket)
-#                         continue
-
-#                     # Ack packet
-#                     if (packet.isRetxPacket()):
-#                         log.debug("Received ACK Packet")
-#                         continue
-
-#                     log.debug("Received normal packet")
-#                     # Append packet to buffer
-#                     packetBuffer.append(packet)
-
-#                     # Send ACK
-#                     log.debug("Sending ACK packet")
-#                     sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, ackPacket)
-
-#             else:
-#                 log.debug("Received invalid ID")
-
-#         except asyncio.TimeoutError:
-#             pass # prevent await blocking
-
-def packetConstructor(bus, reader):
-    global rxCanBuffer
-    while (True):
-        msg = reader.get_message(timeout=0.5)
-
-        if (msg == None):
-            break
-
-        if (msg.arbitration_id == CAN_BOOTLOADER_PMB_ID):
-            log.debug("Received CAN from PMB")
-            rxCanBuffer = rxCanBuffer + msg.data
+async def fwUpdatorRoutine(bus, queue):
+    try:
+        while True:
+            packet = await queue.get()
             
-            # Try to build a Packet
-            if (len(rxCanBuffer) >= PACKET_TOTAL_SIZE):
-                # Extract data from buffer
-                rawBytes: bytearray = readFromBuffer(PACKET_TOTAL_SIZE) 
+            # Run FW state machine
+            print(packet)
 
-                lenType = rawBytes[0].to_bytes()
-                data = rawBytes[PACKET_LENTYPE_SIZE:PACKET_DATA_SIZE+1]
-                crc = rawBytes[PACKET_DATA_SIZE+1:]
+            queue.task_done()
+    except asyncio.CancelledError:
+        log.debug("FW Updator Cancelled. Cleaning up.")
 
-                packet = Packet(lenType, data, crc)
-                computedCrc = packet.computeCrc()
+async def recvRoutine(bus, reader, queue):
+    global rxCanBuffer
+    try:  
+        while not shutdown_flag:
+            msg = reader.get_message()
+            if (msg is not None):
+                # Process the message to build a packet
+                if (msg.arbitration_id == CAN_BOOTLOADER_PMB_ID):
+                    log.debug("Received CAN from PMB")
+                    rxCanBuffer = rxCanBuffer + msg.data
+                    
+                    # Try to build a Packet
+                    if (len(rxCanBuffer) >= PACKET_TOTAL_SIZE):
+                        # Extract data from buffer
+                        rawBytes: bytearray = readFromBuffer(PACKET_TOTAL_SIZE) 
 
-                # Need Retransmission
-                if (computedCrc != packet.crc):
-                    log.error(f"Wrong CRC! Received: {packet.getCrc()}, Computed: {int.from_bytes(computedCrc, "little")}")
-                    log.debug("Sending ReTx Packet")
-                    sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, retxPacket) 
-                    continue
+                        lenType = rawBytes[0].to_bytes()
+                        data = rawBytes[PACKET_LENTYPE_SIZE:PACKET_DATA_SIZE+1]
+                        crc = rawBytes[PACKET_DATA_SIZE+1:]
 
-                # Retransmission packet
-                if (packet.isRetxPacket()):
-                    log.debug("Received ReTx Packet, Retransmitting last packet")
-                    sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, lastTxPacket)
-                    continue
+                        packet = Packet(lenType, data, crc)
+                        computedCrc = packet.computeCrc()
 
-                # Ack packet
-                if (packet.isRetxPacket()):
-                    log.debug("Received ACK Packet")
-                    break
+                        # Need Retransmission
+                        if (computedCrc != packet.crc):
+                            log.error(f"Wrong CRC! Received: {packet.getCrc()}, Computed: {int.from_bytes(computedCrc, "little")}")
+                            log.debug("Sending ReTx Packet")
+                            sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, retxPacket) 
+                            continue
 
-                log.debug("Received normal packet")
-                # Append packet to buffer
-                packetBuffer.append(packet)
+                        # Retransmission packet
+                        if (packet.isRetxPacket()):
+                            log.debug("Received ReTx Packet, Retransmitting last packet")
+                            sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, lastTxPacket)
+                            continue
 
-                # Send ACK
-                log.debug("Sending ACK packet")
-                sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, ackPacket)
-                break
+                        # Ack packet
+                        if (packet.isRetxPacket()):
+                            log.debug("Received ACK Packet")
+                            continue
 
-        else:
-            log.debug("Received invalid ID")
+                        log.debug("Received normal packet")
+                        # Append packet to buffer
+                        await queue.put(packet) # push to queue
 
-def stateMachine():
-    while (len(packetBuffer)):
-        packet = packetBuffer[0]
-        del packetBuffer[0]
+                        # Send ACK
+                        log.debug("Sending ACK packet")
+                        sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, ackPacket)
+                        continue
 
-        print(packet)
+                else:   
+                    log.debug("Received invalid ID")
+
+            await asyncio.sleep(0.1)
+    except asyncio.CancelledError:
+        log.debug("Cancelled recv routine. Cleaning up")
+        
+
 
 async def main():
     with can.Bus(interface='canine', bitrate=1000000) as bus:
-        # reader = can.AsyncBufferedReader()
         reader = can.BufferedReader()
-        # logger = can.Logger("canMsg.log")
-        listeners: list[MessageRecipient] = [reader]
-        # loop = asyncio.get_running_loop()
-        # notifier = can.Notifier(bus, listeners, loop=loop)
-        notifier = can.Notifier(bus, listeners)
-            
+        packet_queue = asyncio.Queue()
+        notifier = can.Notifier(bus, [reader])
+
+        task1 = asyncio.create_task(recvRoutine(bus, reader, packet_queue))
+        task2 = asyncio.create_task(fwUpdatorRoutine(bus, packet_queue))
         try:
-            # packetConstructor_task = asyncio.create_task(packetConstructor(bus, reader))
-            global shutdown
-            while (not shutdown):
-                packetConstructor(bus, reader) # return when a packet is constructed or ack received
-                stateMachine()
-            
-            # await packetConstructor_task
-        except asyncio.CancelledError:
-            log.debug("Shutting down notifier")
-        finally:
+            await asyncio.gather(task1, task2)
+        except:
             notifier.stop()
-
- 
-def handler(signal_received, frame):
-    global shutdown
-    log.critical("CTRL-c detected")
-    for task in asyncio.all_tasks():
-        task.cancel()
-
-    shutdown = True
-
+            global shutdown_flag
+            shutdown_flag = True
+        finally:
+            task1.cancel()
+            await packet_queue.join() 
+            task2.cancel()
 
 if __name__ == "__main__":
-    # Initilise Logger
     log = get_logger("fw_log")
     log.info("Start FW Updator")
-    # signal(SIGINT, handler)
 
     asyncio.run(main())
-    while False:
-        rx = input("Send CAN message \n"
-                   "\t1: Enter APP \n"
-                   "\t2: Echo\n"
-                   "\t3: Invalid\n"
-                   "\t4: Custom ID\n"
-                   ">>")
-        if (int(rx) == 1): # Jump
-            send(1)  
-        elif (int(rx) == 2): # Echo
-            send(2)
-        elif (int(rx) == 3): # Spam invalid data
-            send(3)
-        elif (int(rx) == 4): # Custom ID
-            id = input("ID? ")
-            send_data(int(id), [0xFF])

@@ -5,3 +5,4 @@
 *.d
 *.pyc
 __pycache__
+*.log
