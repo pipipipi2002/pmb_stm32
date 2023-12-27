@@ -30,7 +30,9 @@ uint32_t BQ_ReadRegister(uint8_t addr, uint8_t len) {
 
 	BQ_dataW[0] = addr;
 
-	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 1, BQ_dataR, len);
+	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 1, 0, 0); 
+	/* Dont combine read as it somehow stalls the i2c inside libopencm3 */
+	i2c_transfer7(I2C1, BQ34110_ADDRESS, 0, 0, BQ_dataR, len);
 	// HAL_I2C_Mem_Read(&hi2c1, BQ34110_ADDRESS, addr, 1, BQ_dataR, len, 10);
 
 	for (int i=0; i < len; i++) {
@@ -995,7 +997,8 @@ void BQ_ReadKeys() {
 
 	// HAL_I2C_Mem_Read(&hi2c1, BQ34110_ADDRESS, BQ34110_REG_MAC_DATA, 1, keys, 8, 10);
 	BQ_dataW[0] = BQ34110_REG_MAC_DATA;
-	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 1, keys, 8);
+	i2c_transfer7(I2C1, BQ34110_ADDRESS, BQ_dataW, 1, 0, 0);
+	i2c_transfer7(I2C1, BQ34110_ADDRESS, 0, 0, keys, 8);
 }
 
 void BQ_Unseal() {
