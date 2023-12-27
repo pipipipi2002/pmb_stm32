@@ -16,7 +16,6 @@
 #define PACKET_TYPE_UTILITY         (2U)
 #define PACKET_CONSTRUCT_LENGTHTYPE(len, type) ((uint8_t) (len << 2) | type)
 
-
 #define PACKET_UTILITY_ACK_DATA     (0xAA)
 #define PACKET_UTILITY_RETX_DATA    (0x55)
 
@@ -29,9 +28,9 @@ typedef struct {
 void man_setup(void);
 void man_update(void);
 
-bool man_packetAvailable(void);
-bool man_packetBufferFull(void);
 void man_write(man_packet_ts* packet);
 void man_read(man_packet_ts* packet);
+bool man_packetAvailable(void);
+bool man_packetBufferFull(void);
 
 #endif // INC_MANAGER_H

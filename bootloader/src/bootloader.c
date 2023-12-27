@@ -97,6 +97,7 @@ static void setup(void) {
     while(!gpioif_setup()) system_delayMs(1000);
     while(!canif_setup()) system_delayMs(1000);
     crcif_setup();
+    man_setup();
 
     log_pSuccess("Setup Completed");
 }
