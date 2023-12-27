@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-12-24T07:33:44.104Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="2pJtbfKrw9zCOtOOntK9" version="22.1.11" type="google" pages="4">
+<mxfile host="app.diagrams.net" modified="2023-12-27T07:56:37.994Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="lIbYzTZSWTOHwAkyjHr-" version="22.1.11" type="google" pages="4">
   <diagram name="Memory Layout and Startup Flow" id="L8v-k4GA8zyhKXHsQq-C">
     <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -544,7 +544,7 @@
         <mxCell id="rktvHIwYNhvf_p6fdrcu-5" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Courier New;fontStyle=1" vertex="1" parent="1">
           <mxGeometry x="187.5" y="110" width="30" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="rktvHIwYNhvf_p6fdrcu-7" value="16" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Courier New;fontStyle=1" vertex="1" parent="1">
+        <mxCell id="rktvHIwYNhvf_p6fdrcu-7" value="19" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Courier New;fontStyle=1" vertex="1" parent="1">
           <mxGeometry x="375" y="110" width="55" height="30" as="geometry" />
         </mxCell>
         <mxCell id="rktvHIwYNhvf_p6fdrcu-8" value="4" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Courier New;fontStyle=1" vertex="1" parent="1">

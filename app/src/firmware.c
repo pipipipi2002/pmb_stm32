@@ -34,23 +34,23 @@
 volatile uint32_t vectorTable[48] __attribute__((section(".ramvectortable")));
 
 // Telemetry Data
-uint16_t batt_voltage = 0;
-int32_t batt_current = 0;
-uint16_t batt_status = 0;
-char batt_state[15] = "";
-float board_temperature = 0;
-float board_pressure = 0;
+static uint16_t batt_voltage = 0;
+static int32_t batt_current = 0;
+static uint16_t batt_status = 0;
+static char batt_state[15] = "";
+static float board_temperature = 0;
+static float board_pressure = 0;
 
 // Timer for "cyclic functions"
-uint64_t updateTimer = 0;
-uint64_t CAN_BattTimer = 0;
-uint64_t CAN_BoardTimer = 0;
-uint64_t CAN_HbTimer = 0;
-uint64_t displayTimer = 0;
+static timeout_ts updateTimer;
+static timeout_ts CAN_BattTimer;
+static timeout_ts CAN_BoardTimer;
+static timeout_ts CAN_HbTimer;
+static timeout_ts displayTimer;
 
 // CAN Messages Placeholder
-canMsg_tu canBattMsg, canBoardMsg;
-canMsg_tu canHbMsg = {.heartbeatId = BB_HEARTBEAT_ID_PMB};
+static canMsg_tu canBattMsg, canBoardMsg;
+static canMsg_tu canHbMsg = {.heartbeatId = BB_HEARTBEAT_ID_PMB};
 
 /*
  * Internal Function Declarations
@@ -123,9 +123,8 @@ int main(void) {
         }
 
         /* Update PMB and Battery Stats */
-        if (system_getTicks() - updateTimer > PMB_STATUS_UPDATE_INTVL) {
+        if (timeout_hasElapsed(&updateTimer)) {
             log_pInfo("Updating internal data");
-            updateTimer = system_getTicks();
             batt_status = BQ_GetBattStatus();
             batt_current = BQ_GetCurrent() * PMB_CURRENT_SCALE;
             batt_current = (batt_current < 0) ? -1 * batt_current : batt_current;
@@ -135,33 +134,29 @@ int main(void) {
         }
 
         /* Send Battery Stats via CAN */
-        if (system_getTicks() - CAN_BattTimer > PMB_CAN_BATT_MSG_INTVL) {
+        if (timeout_hasElapsed(&CAN_BattTimer)) {
             log_pInfo("Sending Battery Statistics via CAN");
-            CAN_BattTimer = system_getTicks();
 
             encodeCanMsgBattStat();
             canif_sendVehMsg(&canBattMsg, BB_CAN_STD_MSG_SIZE, BB_CAN_ID_BATT_STAT);
         }
 
         /* Send Board Stats via CAN */
-        if (system_getTicks() - CAN_BoardTimer > PMB_CAN_BOARD_MSG_INTVL) {
+        if (timeout_hasElapsed(&CAN_BoardTimer)) {
             log_pInfo("Sending Board Statistics via CAN");
-            CAN_BoardTimer = system_getTicks();
 
             encodeCanMsgBoardStat();
             canif_sendVehMsg(&canBoardMsg, BB_CAN_STD_MSG_SIZE, BB_CAN_ID_PMB_STAT);
         }
         
         /* Send Heartbeat via CAN */
-        if (system_getTicks() - CAN_HbTimer > PMB_CAN_HB_MSG_INTVL) {
+        if (timeout_hasElapsed(&CAN_HbTimer)) {
             log_pInfo("Sending Heartbeat via CAN");
-            CAN_HbTimer = system_getTicks();
             canif_sendVehMsg(&canHbMsg, BB_CAN_HB_MSG_SIZE, BB_CAN_ID_HEARTBEAT);
         }
 
         /* Update Display */
-        if (system_getTicks() - displayTimer > PMB_OLED_REFRESH_INTVL) {
-            displayTimer = system_getTicks();
+        if(timeout_hasElapsed(&displayTimer)) {
             displayDataMessage();
         }
     }
@@ -177,6 +172,12 @@ static void setup(void) {
 
     /* Driver Setup */
     ssd1306_Init();
+
+    timeout_setup(&updateTimer,  PMB_STATUS_UPDATE_INTVL, true);
+    timeout_setup(&CAN_BattTimer,  PMB_CAN_BATT_MSG_INTVL, true);
+    timeout_setup(&CAN_BoardTimer,  PMB_CAN_BOARD_MSG_INTVL, true);
+    timeout_setup(&CAN_HbTimer,  PMB_CAN_HB_MSG_INTVL, true);
+    timeout_setup(&displayTimer,  PMB_OLED_REFRESH_INTVL, true);
     
     log_pSuccess("Setup Completed");
 }
