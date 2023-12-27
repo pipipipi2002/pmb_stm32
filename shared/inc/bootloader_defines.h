@@ -4,6 +4,7 @@
 #include "common_defines.h"
 
 #define CAN_ID_BOOTLOADER_SERVER        (40U)
+#define CAN_ID_BOOTLOADER_PMB           (41U)
 
 #define BOOTLOADER_SERVER_JUMP_CMD      0xAA
 #define BOOTLOADER_SERVER_ECHO_CMD      0xBB

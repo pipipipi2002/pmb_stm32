@@ -10,7 +10,8 @@
 #include "gpio_if.h"
 #include "can_if.h"
 #include "bootloader_defines.h"
-
+#include "manager.h"
+#include "crc_if.h"
 
 #ifndef BOOTLOADER
     #error "BOOTLOADER OPTION NOT SELECTED"
@@ -46,6 +47,18 @@ int main (void) {
     log_pInfo("Latch power to circuit, disable power to AUV4");
 
     log_pInfo("Waiting for command");
+    man_packet_ts packet = {
+        .lenType = 0b00111101,
+        .data = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x12, 0x23, 0x34}
+    };
+    packet.crc = crcif_compute32((uint8_t*) &packet, (PACKET_TOTAL_SIZE - PACKET_CRC_SIZE)); // CRC = 0x8A1FC7E6
+    
+    log_pInfo("Sending packet");
+    log_pInfo("CRC: 0x%X", packet.crc);
+    log_pInfo("CRC: %d", packet.crc);
+    man_write(&packet);
+
+    #ifndef NO_JUMP
     activityTimer = system_getTicks();
     while (1) {
         if (activityTimer + WAIT_FOR_BOOT_SERVER_MS < system_getTicks()) {
@@ -72,9 +85,13 @@ int main (void) {
                 default:
                     log_pError("DATA INVALID 0x%X", rxData);
             }
-
-            activityTimer = system_getTicks();
+           activityTimer = system_getTicks();
         }
+    #else
+    while (1) {
+        man_update();
+    }
+    #endif // NO_JUMP
     }
     return 0; // will not reach here
 }
@@ -83,6 +100,8 @@ static void setup(void) {
     while(!uart1if_setup()) system_delayMs(1000);
     while(!gpioif_setup()) system_delayMs(1000);
     while(!canif_setup()) system_delayMs(1000);
+    crcif_setup();
+    man_setup();
 
     log_pSuccess("Setup Completed");
 }

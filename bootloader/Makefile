@@ -64,12 +64,15 @@ CSTD		?= -std=c99
 # Source files
 
 OBJS		+= $(SRC_DIR)/$(BINARY).o
+OBJS		+= $(SRC_DIR)/manager.o
+OBJS		+= $(SRC_DIR)/crc_if.o
 OBJS		+= $(SHARED_SRC_DIR)/system.o
 OBJS		+= $(SHARED_SRC_DIR)/log.o
 OBJS		+= $(SHARED_SRC_DIR)/uart_if.o
 OBJS		+= $(SHARED_SRC_DIR)/can_if.o
 OBJS		+= $(SHARED_SRC_DIR)/gpio_if.o
 OBJS		+= $(SHARED_SRC_DIR)/cqueue.o
+
 
 ###############################################################################
 # C flags
