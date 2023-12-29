@@ -72,6 +72,7 @@ OBJS		+= $(SHARED_SRC_DIR)/uart_if.o
 OBJS		+= $(SHARED_SRC_DIR)/can_if.o
 OBJS		+= $(SHARED_SRC_DIR)/gpio_if.o
 OBJS		+= $(SHARED_SRC_DIR)/cqueue.o
+OBJS		+= $(SHARED_SRC_DIR)/flash_if.o
 
 
 ###############################################################################

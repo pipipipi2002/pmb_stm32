@@ -31,7 +31,11 @@
         "string_view": "c",
         "regex": "c",
         "array": "c",
-        "string": "c"
+        "string": "c",
+        "flash.h": "c",
+        "flash_common_all.h": "c",
+        "flash_common_f.h": "c",
+        "flash_common_f01.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/bin/"
