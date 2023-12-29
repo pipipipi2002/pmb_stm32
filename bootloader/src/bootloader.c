@@ -177,13 +177,20 @@ int main (void) {
                 if (man_packetAvailable()) {
                     man_read(&packet_rx);
 
-                    /* Always write 8 bytes as chip only supports half-word/word write */
-                    if (!flashif_write(MAIN_APP_START_ADDR + fwBytesWritten, packet_rx.data, 8)) {
+                    /* Check data length */
+                    if ((packet_rx.lenType >> 2) != BL_UPDATE_FW_PACKET_DATA_SIZE) {
                         state = BL_DONE_STATE;
                         man_write(&nack);
                         break;
                     }
-                    fwBytesWritten += 8;
+
+                    /* Always write 16 bytes as chip only supports half-word/word write */
+                    if (!flashif_write(MAIN_APP_START_ADDR + fwBytesWritten, packet_rx.data, BL_UPDATE_FW_PACKET_DATA_SIZE)) {
+                        state = BL_DONE_STATE;
+                        man_write(&nack);
+                        break;
+                    }
+                    fwBytesWritten += BL_UPDATE_FW_PACKET_DATA_SIZE;
 
                     /* Check for completion */
                     if (fwBytesWritten >= fwLength) {
