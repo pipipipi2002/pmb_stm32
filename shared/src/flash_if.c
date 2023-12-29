@@ -29,11 +29,20 @@ void flashif_eraseMainApplication() {
  * @param data pointer to array of 1 byte data
  * @param length length of 1 byte data to write
  */
-void flashif_write(const uint32_t address, const uint8_t* data, const uint32_t length) {
+bool flashif_write(const uint32_t address, const uint8_t* data, const uint32_t length) {
+    // Simple protection against bootloader area
+    #ifdef BOOTLOADER
+    if (address < MAIN_APP_START_ADDR) {
+        return false;
+    }
+    #endif // BOOTLOADER
+    
     flash_unlock();
     for (uint32_t i = 0; i < length/4; i++) {
         uint32_t data32 = data[i*4] | (data[i*4+1] << 8) | (data[i*4+2] << 16) | (data[i*4+3] << 24);
         flash_program_word(address + (i * 4), data32);
     }
     flash_lock();
+
+    return true;
 }
