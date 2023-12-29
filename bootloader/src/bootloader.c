@@ -12,6 +12,7 @@
 #include "bootloader_defines.h"
 #include "manager.h"
 #include "crc_if.h"
+#include "flash_if.h"
 
 #ifndef BOOTLOADER
     #error "BOOTLOADER OPTION NOT SELECTED"
@@ -87,12 +88,12 @@ int main (void) {
             }
            activityTimer = system_getTicks();
         }
+    }
     #else
     while (1) {
         man_update();
     }
     #endif // NO_JUMP
-    }
     return 0; // will not reach here
 }
 

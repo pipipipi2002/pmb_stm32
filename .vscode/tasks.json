@@ -6,7 +6,7 @@
             "options": {
                 "cwd": "bootloader"
             },
-            "command": "make bin",
+            "command": "make clean && make bin",
             "problemMatcher": "$gcc"
         },
         {
@@ -15,7 +15,7 @@
             "options": {
                 "cwd": "app"
             },
-            "command": "make bin",
+            "command": "make clean && make bin",
             "problemMatcher": "$gcc",
             "group": {
                 "kind": "build",
