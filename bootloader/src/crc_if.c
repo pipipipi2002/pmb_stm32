@@ -9,6 +9,11 @@ bool crcif_setup(void) {
     return true;
 }
 
+bool crcif_destruct(void) {
+    rcc_periph_clock_disable(RCC_CRC);
+    return true;
+}
+
 /**
  * @brief Compute 32bit crc based on CRC-32 Ethernet
  * 

@@ -23,20 +23,23 @@ void flashif_eraseMainApplication() {
 }
 
 /**
- * @brief write data into flash (minimum 4 byte)
+ * @brief write data into flash (multiple of 4 byte)
  * 
- * @param address Start address of 32-bit write
+ * @param address Start address of 32-bit write (address ends in 0 4 8 C)
  * @param data pointer to array of 1 byte data
- * @param length length of 1 byte data to write
+ * @param length length of 1 byte data to write (mult 4)
  */
 bool flashif_write(const uint32_t address, const uint8_t* data, const uint32_t length) {
-    // Simple protection against bootloader area
     #ifdef BOOTLOADER
+    // Simple protection for bootloader area
     if (address < MAIN_APP_START_ADDR) {
         return false;
     }
     #endif // BOOTLOADER
     
+    // Check 32-bit alignment
+    if (address & 0b11) return false;
+
     flash_unlock();
     for (uint32_t i = 0; i < length/4; i++) {
         uint32_t data32 = data[i*4] | (data[i*4+1] << 8) | (data[i*4+2] << 16) | (data[i*4+3] << 24);

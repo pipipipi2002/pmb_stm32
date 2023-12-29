@@ -32,5 +32,9 @@ void man_write(man_packet_ts* packet);
 void man_read(man_packet_ts* packet);
 bool man_packetAvailable(void);
 bool man_packetBufferFull(void);
+void man_createBLPacketSingle(man_packet_ts* packet, uint8_t type);
+bool man_isBLPacketSingle(const man_packet_ts* packet, const uint8_t type);
+void man_createBLPacketData(man_packet_ts* packet, uint8_t type, uint32_t data);
+bool man_isBLPacketData(const man_packet_ts* packet, const uint8_t type, const uint32_t dataCompare);
 
 #endif // INC_MANAGER_H

@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-12-27T07:56:37.994Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="lIbYzTZSWTOHwAkyjHr-" version="22.1.11" type="google" pages="4">
+<mxfile host="app.diagrams.net" modified="2023-12-29T08:48:52.708Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="YZoCaPsuMI9VgEjkUDXc" version="22.1.11" type="google" pages="4">
   <diagram name="Memory Layout and Startup Flow" id="L8v-k4GA8zyhKXHsQq-C">
     <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -826,7 +826,7 @@
         <mxCell id="_ViHDFkmNZHr2Fso9uEF-35" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;strokeWidth=2;width=17.714285714285715;endSize=6.617142857142857;" edge="1" parent="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="689.71" y="470" as="sourcePoint" />
-            <mxPoint x="690" y="1000" as="targetPoint" />
+            <mxPoint x="690" y="1040" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="_ViHDFkmNZHr2Fso9uEF-1" value="&lt;h1&gt;Bootloader State Machine&lt;/h1&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
@@ -953,12 +953,12 @@
         </mxCell>
         <mxCell id="_ViHDFkmNZHr2Fso9uEF-28" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;strokeWidth=2;width=17.714285714285715;endSize=6.617142857142857;" edge="1" parent="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="157.85" y="470" as="sourcePoint" />
-            <mxPoint x="158.14" y="1000" as="targetPoint" />
+            <mxPoint x="160" y="470" as="sourcePoint" />
+            <mxPoint x="160" y="1040" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="_ViHDFkmNZHr2Fso9uEF-31" value="&lt;h2&gt;Firmware &lt;br&gt;Updater&lt;/h2&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="98" y="420" width="120" height="40" as="geometry" />
+          <mxGeometry x="100" y="420" width="120" height="40" as="geometry" />
         </mxCell>
         <mxCell id="_ViHDFkmNZHr2Fso9uEF-32" value="&lt;h2&gt;Bootloader&lt;/h2&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="630" y="420" width="120" height="40" as="geometry" />
@@ -1164,6 +1164,17 @@
         </mxCell>
         <mxCell id="f_L1YQ0-RPGJw7e0WO7X-42" value="Any timeout or unexpected data will raise an error and reset to HB Data" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Verdana;" vertex="1" parent="1">
           <mxGeometry x="-170" y="716.25" width="140" height="63.75" as="geometry" />
+        </mxCell>
+        <mxCell id="LZ_bmNoTexCTD-IMBlgf-2" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="681.25" y="1000" as="sourcePoint" />
+            <mxPoint x="171.25" y="1000" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LZ_bmNoTexCTD-IMBlgf-3" value="Send Update Completed" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=13;fontFamily=Verdana;labelBackgroundColor=none;" connectable="0" vertex="1" parent="LZ_bmNoTexCTD-IMBlgf-2">
+          <mxGeometry x="0.0174" y="1" relative="1" as="geometry">
+            <mxPoint x="4" y="-11" as="offset" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

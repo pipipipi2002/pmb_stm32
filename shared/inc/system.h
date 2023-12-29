@@ -22,5 +22,6 @@ void timeout_setup(timeout_ts* time, uint64_t timeout_ms, bool autoReset);
 bool timeout_hasElapsed(timeout_ts* time);
 void timeout_turnOff(timeout_ts* time);
 void timeout_turnOn(timeout_ts* time);
+void timeout_reset(timeout_ts* time);
 
 #endif // INC_PMB_SYSTEM_H

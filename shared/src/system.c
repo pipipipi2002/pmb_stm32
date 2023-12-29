@@ -77,3 +77,7 @@ void timeout_turnOn(timeout_ts* time) {
     time->targetTime = system_getTicks() + time->timeout;
     time->hasElapsed = false;
 }
+
+void timeout_reset(timeout_ts* time) {
+    time->targetTime = system_getTicks() + time->timeout;
+}
