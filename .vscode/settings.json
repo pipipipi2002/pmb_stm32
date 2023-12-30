@@ -36,7 +36,14 @@
         "flash_common_all.h": "c",
         "flash_common_f.h": "c",
         "flash_common_f01.h": "c",
-        "can_defines.h": "c"
+        "can_defines.h": "c",
+        "compare": "c",
+        "functional": "c",
+        "ratio": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "variant": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/bin/"

@@ -30,6 +30,11 @@ def get_logger(logger_name):
    logger.propagate = False
    return logger
 
+def computeCrc8(data:bytearray) -> bytes:
+    crc8 = crcmod.mkCrcFun(poly=0x107, rev=False, initCrc=0, xorOut=0)
+    result = crc8(data)
+    return result.to_bytes()
+
 def computeCrc32(data:bytearray) -> bytes:
     crc32 = crcmod.mkCrcFun(poly=0x104C11DB7, rev=True, initCrc=0, xorOut=0xFFFFFFFF)
     result = crc32(data)
@@ -49,7 +54,7 @@ class PacketException(Exception):
         return f"Error: {self.message}\nExpected: {self.expected}\nReceived: {self.received}"
 
 class Packet:
-    def __init__(self, lenType:bytes=None, data:bytearray=None, crc:bytearray=None):
+    def __init__(self, lenType:bytes=None, data:bytearray=None, crc:bytes=None):
         # data and crc is in little endian
         self.lenType = lenType
         
@@ -76,9 +81,9 @@ class Packet:
     def getCrc(self) -> int:
         return (int.from_bytes(self.crc, "little"))
 
-    def computeCrc(self) -> bytearray:
+    def computeCrc(self) -> bytes:
         data = self.lenType + self.data
-        computed = bytearray(computeCrc32(data)) # Little endian already
+        computed = computeCrc8(data)
         return computed 
     
     def toByteStream(self) -> bytearray:
@@ -106,18 +111,6 @@ class Packet:
         lenType = (length << 2) | type
         return lenType.to_bytes(1, "little")
 
-def send_data(id, data):
-    with can.Bus(interface='canine', bitrate=1000000) as bus:
-        msg = can.Message(
-            arbitration_id=id, data=data, is_extended_id=False
-        )
-
-        try:
-            bus.send(msg)
-            print(f"Message sent to {CAN_BOOTLOADER_SERVER_ID}")
-        except can.CanError:
-            print("Message NOT sent")
-
 def start_rx():
     with can.Bus(interface='canine', bitrate=1000000) as bus:
         try:
@@ -131,7 +124,6 @@ def start_rx():
 
 packetBuffer:list[Packet] = []
 
-ackPacket:Packet = Packet(Packet.constructLenType(PACKET_LENTYPE_SIZE, PACKET_TYPE_UTILITY), PACKET_UTILITY_ACK_DATA.to_bytes())
 retxPacket:Packet = Packet(Packet.constructLenType(PACKET_LENTYPE_SIZE, PACKET_TYPE_UTILITY), PACKET_UTILITY_RETX_DATA.to_bytes())
 
 lastTxPacket:Packet = Packet()
@@ -145,20 +137,33 @@ def sendPacket(bus: can.Bus, id, packet:Packet):
     data = packet.toByteStream()
 
     msg0 = can.Message(arbitration_id=id, data = data[0:8], is_extended_id=False)
-    msg1 = can.Message(arbitration_id=id, data = data[8:16], is_extended_id=False)
-    msg2 = can.Message(arbitration_id=id, data = data[16:24], is_extended_id=False)
 
     try:
         bus.send(msg0)
-        sleep(SLEEP_TIME)
-        bus.send(msg1)
-        sleep(SLEEP_TIME)
-        bus.send(msg2)
         sleep(SLEEP_TIME)
         lastTxPacket = packet
     except can.CanError:
         log.error("Message Failed to send")
 
+def sendData(bus:can.Bus, id:int, data:bytearray, len:int) -> int:
+    frames_sent:int = 0
+    i:int = 0
+    while (i < len):
+        if (i+8 > len):
+            to_pad = (8 + i) - len
+            data = data + bytearray([0xFF]*to_pad)
+ 
+        msg = can.Message(arbitration_id=id, data=data[i:i+8], is_extended_id=False)
+        
+        try:
+            bus.send(msg)
+            sleep(SLEEP_TIME)
+        except can.CanError:
+            log.error("Message Failed to send")
+        i += 8
+        frames_sent += 1
+
+    return frames_sent
 
 def readFromBuffer(n: int) -> bytearray:
     removed = rxCanBuffer[0:n]
@@ -218,7 +223,7 @@ async def packetBuilder(bus, reader, queue):
         msg = reader.get_message()
         if (msg is not None):
             # Process the message to build a packet
-            if (msg.arbitration_id == CAN_BOOTLOADER_PMB_ID):
+            if (msg.arbitration_id == CAN_BOOTLOADER_ID):
                 log.debug("Received CAN from PMB")
                 rxCanBuffer = rxCanBuffer + msg.data
                 
@@ -229,8 +234,8 @@ async def packetBuilder(bus, reader, queue):
                     rawBytes: bytearray = readFromBuffer(PACKET_TOTAL_SIZE) 
 
                     lenType = rawBytes[0].to_bytes()
-                    data = rawBytes[PACKET_LENTYPE_SIZE:PACKET_DATA_SIZE+1]
-                    crc = rawBytes[PACKET_DATA_SIZE+1:]
+                    data = rawBytes[PACKET_LENTYPE_SIZE:PACKET_DATA_SIZE+PACKET_LENTYPE_SIZE]
+                    crc = rawBytes[PACKET_DATA_SIZE+PACKET_LENTYPE_SIZE:]
 
                     packet = Packet(lenType, data, crc)
                     computedCrc = packet.computeCrc()
@@ -239,18 +244,13 @@ async def packetBuilder(bus, reader, queue):
                     if (computedCrc != packet.crc):
                         log.error(f"Wrong CRC! Received: {packet.getCrc()}, Computed: {int.from_bytes(computedCrc, 'little')}")
                         log.debug("Sending ReTx Packet")
-                        sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, retxPacket) 
+                        sendPacket(bus, CAN_BOOTLOADER_ID, retxPacket) 
                         continue
 
                     # Retransmission packet
                     if (packet.isRetxPacket()):
                         log.debug("Received ReTx Packet, Retransmitting last packet")
-                        sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, lastTxPacket)
-                        continue
-
-                    # Ack packet
-                    if (packet.isAckPacket()):
-                        log.debug("Received ACK Packet")
+                        sendPacket(bus, CAN_BOOTLOADER_ID, lastTxPacket)
                         continue
                     
                     # NACK packet
@@ -262,9 +262,6 @@ async def packetBuilder(bus, reader, queue):
                     # Append packet to buffer
                     await queue.put(packet) # push to queue
 
-                    # Send ACK
-                    log.debug("Sending ACK packet")
-                    sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, ackPacket)
                     continue
 
             else:   
@@ -299,7 +296,7 @@ async def main(log: logging.Logger):
         # Send Sync and wait for synced
         syncPacket = Packet(Packet.constructLenType(1, PACKET_TYPE_NORMAL), BL_SYNC_REQ_PACKET.to_bytes())
         log.info(f"Sending Sync Packet: {bytesAsHexString(BL_SYNC_REQ_PACKET.to_bytes())}")
-        sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, syncPacket)
+        sendPacket(bus, CAN_BOOTLOADER_ID, syncPacket)
         log.info("Waiting for Synced Packet")
         await waitForSingleBytePacket(packet_queue, BL_SYNCED_RES_PACKET)
         log.warning("Received Synced Packet")
@@ -307,7 +304,7 @@ async def main(log: logging.Logger):
         # Send Firmware Update Request and wait for ACK
         furPacket = Packet(Packet.constructLenType(1, PACKET_TYPE_NORMAL), BL_FUR_REQ_PACKET.to_bytes())
         log.info(f"Sending Firmware Update Request Packet: {bytesAsHexString(BL_FUR_REQ_PACKET.to_bytes())}")
-        sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, furPacket)
+        sendPacket(bus, CAN_BOOTLOADER_ID, furPacket)
         log.info("Waiting for Firmware Update Request Ack Packet")
         await waitForSingleBytePacket(packet_queue, BL_FUR_ACK_RES_PACKET)
         log.warning("Received Firmware Update Request Ack Packet")
@@ -316,7 +313,7 @@ async def main(log: logging.Logger):
         devIdPayload = bytearray(BL_DEVID_REQ_PACKET.to_bytes()) + bytearray(BL_PMB_DEVID_MSG.to_bytes(4, "little"))
         devIdPacket = Packet(Packet.constructLenType(5, PACKET_TYPE_NORMAL), devIdPayload)
         log.info(f"Sending Device Id Packet: {bytesAsHexString(devIdPayload)}")
-        sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, devIdPacket)
+        sendPacket(bus, CAN_BOOTLOADER_ID, devIdPacket)
         log.info("Waiting for Device ID Ack Packet")
         await waitForDataBytePacket(packet_queue, BL_DEVID_ACK_RES_PACKET, BL_PMB_DEVID_MSG)
         log.warning("Received Device ID ACK Packet")
@@ -325,7 +322,7 @@ async def main(log: logging.Logger):
         fwLenPayload = bytearray(BL_FWLEN_REQ_PACKET.to_bytes()) + bytearray(fw_length.to_bytes(4, "little"))
         fwLenPacket = Packet(Packet.constructLenType(5, PACKET_TYPE_NORMAL), fwLenPayload)
         log.info(f"Sending Firmware Length Packet: {fw_length}")
-        sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, fwLenPacket)
+        sendPacket(bus, CAN_BOOTLOADER_ID, fwLenPacket)
         log.info("Waiting for Firmware Length Ack Packet")
         await waitForDataBytePacket(packet_queue, BL_FWLEN_ACK_RES_PACKET, fw_length)
         log.warning("Received Firmware Length Ack Packet")
@@ -339,12 +336,19 @@ async def main(log: logging.Logger):
             log.warning("Received Data Ready Packet")
 
             # Check length to send
-            lenToSend = 16 if (bytesSent + 16 <= fw_length) else (fw_length - bytesSent)
-            # Build packet and send 
-            fwUpdatePayload = bytearray(fw_bin_main_app[bytesSent: bytesSent + lenToSend])
-            fwUpdatePacket = Packet(Packet.constructLenType(lenToSend, PACKET_TYPE_NORMAL), fwUpdatePayload)
-            log.info(f"Sending Firmware data: {bytesSent + lenToSend}/{fw_length}")
-            sendPacket(bus, CAN_BOOTLOADER_SERVER_ID, fwUpdatePacket)
+            lenToSend = BL_FW_DATA_SEG_SIZE if (bytesSent +  BL_FW_DATA_SEG_SIZE <= fw_length) else (fw_length - bytesSent)
+            fwDataSegment = bytearray(fw_bin_main_app[bytesSent: bytesSent + lenToSend])
+            
+            # Send FW data to DATA ID
+            log.info("Sending data over...")
+            frameSent = sendData(bus, CAN_BOOTLOADER_DATA_ID, fwDataSegment, lenToSend)
+            log.info(f"[{lenToSend+bytesSent}/{fw_length}] Sent {lenToSend} bytes over {frameSent} CAN frames")
+
+            # Send FW data sent packet
+            fwDataSentPayload = bytearray(BL_DATASENT_REQ_PACKET.to_bytes()) + bytearray(lenToSend.to_bytes(4, "little"))
+            fwDataSentPacket = Packet(Packet.constructLenType(5, PACKET_TYPE_NORMAL), fwDataSentPayload)
+            log.info("Sending FW Data Sent Packet")
+            sendPacket(bus, CAN_BOOTLOADER_ID, fwDataSentPacket)
 
             bytesSent += lenToSend
 

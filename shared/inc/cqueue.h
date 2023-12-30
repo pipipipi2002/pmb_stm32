@@ -19,5 +19,6 @@ uint8_t cqueue_peek(cqueue_ts* q);
 uint8_t cqueue_pushn(cqueue_ts* q, uint8_t* data, uint8_t len);
 bool cqueue_push(cqueue_ts* q, uint8_t data);
 bool cqueue_pop(cqueue_ts* q, uint8_t* data);
+void cqueue_reset(cqueue_ts* q);
 
 #endif // INC_CQUEUE_H

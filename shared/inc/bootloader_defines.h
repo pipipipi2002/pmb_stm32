@@ -3,8 +3,8 @@
 
 #include "common_defines.h"
 
-#define CAN_ID_BOOTLOADER_SERVER        (40U)
-#define CAN_ID_BOOTLOADER_PMB           (41U)
+#define CAN_ID_BOOTLOADER               (40U)
+#define CAN_ID_BOOTLOADER_DATA          (41U)
 
 /* 4-Byte Msg definition for the flash state machine */
 // REQ: Server -> PMB
@@ -24,8 +24,10 @@
 #define BL_FWLEN_ACK_RES_PACKET         (0x73)
 
 #define BL_DATARDY_RES_PACKET           (0xC0)
-#define BL_UPDATE_FW_PACKET_DATA_SIZE   (16) 
+#define BL_DATASENT_REQ_PACKET          (0x88)
 
 #define BL_SUCCESS_RES_PACKET           (0x69)
+
+#define BL_FW_DATA_SEG_SIZE             (1024)
 
 #endif // INC_BOOTLOADER_DEFINES_H

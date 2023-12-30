@@ -3,11 +3,13 @@
 
 #include "common_defines.h"
 
+#define MAN_DISABLE_DEBUG
+
 #define PACKET_BUFFER_LENGTH        (8U)
 
 #define PACKET_LENTYPE_SIZE         (1U)
-#define PACKET_DATA_SIZE            (19U)
-#define PACKET_CRC_SIZE             (4U)
+#define PACKET_DATA_SIZE            (6U)
+#define PACKET_CRC_SIZE             (1U)
 #define PACKET_TOTAL_SIZE           (PACKET_LENTYPE_SIZE + PACKET_DATA_SIZE + PACKET_CRC_SIZE)
 
 #define PACKET_LENGTH_MASK          (0b11111100)
@@ -20,10 +22,25 @@
 #define PACKET_UTILITY_RETX_DATA    (0x67)
 #define PACKET_UTILITY_NACK_DATA    (0xDE)
 
+#if defined (MAN_DISABLE_DEBUG)
+	#define $INFO(fmt, ...)
+	#define $SUCCESS(fmt, ...) 
+	#define $ERROR(fmt, ...) log_pError(fmt, ##__VA_ARGS__)
+#elif defined (USE_LOGGER)
+	#define $INFO(fmt, ...) log_pInfo(fmt, ##__VA_ARGS__)
+	#define $ERROR(fmt, ...) log_pError(fmt, ##__VA_ARGS__)
+	#define $SUCCESS(fmt, ...) log_pSuccess(fmt, ##__VA_ARGS__)
+#else
+	#include <stdio.h>
+	#define $INFO(fmt, ...) printf(fmt, ##__VA_ARGS__)
+	#define $ERROR(fmt, ...) printf(fmt, ##__VA_ARGS__)
+	#define $SUCCESS(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#endif // USE_LOGGER
+
 typedef struct {
     uint8_t lenType;
     uint8_t data[PACKET_DATA_SIZE];
-    uint32_t crc;
+    uint8_t crc;
 } man_packet_ts;
 
 void man_setup(void);

@@ -70,6 +70,8 @@ int main (void) {
     timeout_setup(&canHbTime, CAN_HB_TIMEOUT, true);
     timeout_setup(&masterTime, MASTER_TIMEOUT, false);
 
+    log_pInfo("Entering SYNC State");
+
     while (state != BL_DONE_STATE) {
         if (timeout_hasElapsed(&masterTime) == true) {
             log_pInfo("Bootloader Timeout");
@@ -85,15 +87,20 @@ int main (void) {
                     
                     /* Check SYNC data */
                     if (man_isBLPacketSingle(&packet_rx, BL_SYNC_REQ_PACKET)) {
+                        log_pInfo("Received SYNC Packet");
                         /* Send SYNCED msg */
                         man_createBLPacketSingle(&packet_tx, BL_SYNCED_RES_PACKET);
                         man_write(&packet_tx);
+                        log_pInfo("Sent SYNCED Packet");
                         /* Transition to FUR state */
                         state = BL_FUR_STATE;
+                        log_pInfo("Enter FUR State");
                         /* Reset Time */
                         timeout_reset(&masterTime);
                         break;
-                    } // Wait for correct sync until timeout
+                    } else { // Wait for correct sync until timeout
+                        log_pError("Received unknown packet in SYNC state");
+                    }
                 }
                 /* Send Heartbeat */
                 if (timeout_hasElapsed(&canHbTime) == true) {
@@ -106,14 +113,18 @@ int main (void) {
 
                     /* Check for FUR data */
                     if (man_isBLPacketSingle(&packet_rx, BL_FUR_REQ_PACKET)) {
+                        log_pInfo("Received FUR Packet");
                         /* Send FUR ACK */
                         man_createBLPacketSingle(&packet_tx, BL_FUR_ACK_RES_PACKET);
                         man_write(&packet_tx);
+                        log_pInfo("Sent FUR ACK");
                         /* Transition to DEVID state */
                         state = BL_DEVID_STATE;
+                        log_pInfo("Enter DEVID State");
                         /* Reset Time */
                         timeout_reset(&masterTime);
                     } else {
+                        log_pError("Received unknown packet in FUR state");
                         state = BL_DONE_STATE;
                         man_sendNack();
                         break;
@@ -126,14 +137,18 @@ int main (void) {
 
                     /* Check for DEVID data */
                     if (man_isBLPacketData(&packet_rx, BL_DEVID_REQ_PACKET, BL_PMB_DEVID_MSG)) {
+                        log_pInfo("Received DEVID Packet");
                         /* Send DEVID ACK */
                         man_createBLPacketData(&packet_tx, BL_DEVID_ACK_RES_PACKET, BL_PMB_DEVID_MSG);
                         man_write(&packet_tx);
+                        log_pInfo("Sent DEVID ACK");
                         /* Transition to DEVID state */
                         state = BL_FW_LENGTH_STATE;
+                        log_pInfo("Enter FWLEN State");
                         /* Reset Time */
                         timeout_reset(&masterTime);
                     } else {
+                        log_pError("Received unknown packet in DEVID state");
                         state = BL_DONE_STATE;
                         man_sendNack();
                         break;
@@ -146,14 +161,18 @@ int main (void) {
 
                     fwLength = packet_rx.data[1] | (packet_rx.data[2] << 8) | (packet_rx.data[3] << 16) | (packet_rx.data[4] << 24);
                     if (man_isBLPacketData(&packet_rx, BL_FWLEN_REQ_PACKET, 0) && (fwLength <= MAIN_APP_SIZE_MAX)) {
+                        log_pInfo("Received FWLEN Packet: %u Bytes", fwLength);
                         /* Send FW Len ACK */
                         man_createBLPacketData(&packet_tx, BL_FWLEN_ACK_RES_PACKET, fwLength);
                         man_write(&packet_tx);
+                        log_pInfo("Sent FWLEN ACK");
                         /* Transition to Erase App state */
                         state = BL_ERASE_APP_STATE;
+                        log_pInfo("Enter ERASE APP State");
                         /* Reset Time */
                         timeout_reset(&masterTime);
                     } else {
+                        log_pError("Received unknown packet in FWLEN state");
                         state = BL_DONE_STATE;
                         man_sendNack();
                         break;
@@ -166,38 +185,51 @@ int main (void) {
                 flashif_eraseMainApplication();
                 /* Transition to Receive FW state */
                 state = BL_RECV_FW_STATE;
+                /* Clear FW Data Buffer */
+                canif_clearQueue(CAN_ID_BOOTLOADER_DATA);
                 /* Send Data Ready */
                 man_createBLPacketSingle(&packet_tx, BL_DATARDY_RES_PACKET);
                 man_write(&packet_tx);    
+                log_pInfo("Sent Data Ready Packet");
                 /* Reset Time */
                 timeout_reset(&masterTime);
             } break;
 
             case BL_RECV_FW_STATE: {
+                /* Wait for Data Sent Packet */
                 if (man_packetAvailable()) {
                     man_read(&packet_rx);
 
-                    /* Check data length */
-                    if ((packet_rx.lenType >> 2) != BL_UPDATE_FW_PACKET_DATA_SIZE) {
+                    /* Check Data Sent Packet */
+                    if (!man_isBLPacketData(&packet_rx, BL_DATASENT_REQ_PACKET, 0)) {
+                        log_pError("Received unknown packet in RECV FW state");
                         state = BL_DONE_STATE;
                         man_sendNack();
                         break;
                     }
+                    /* Segment size + bytes written will never go above firmware size as we have confirmed in the previous stae */
+                    uint32_t rxSegmentSize = packet_rx.data[1] | (packet_rx.data[2] << 8) | (packet_rx.data[3] << 16) | (packet_rx.data[4] << 24);
+                    uint8_t* segmentBuffer = canif_getQueuePointer(CAN_ID_BOOTLOADER_DATA);
+                    log_pInfo("Received Data Sent Packet: %u Bytes", rxSegmentSize);
 
-                    /* Always write 16 bytes as chip only supports half-word/word write */
-                    if (!flashif_write(MAIN_APP_START_ADDR + fwBytesWritten, packet_rx.data, BL_UPDATE_FW_PACKET_DATA_SIZE)) {
+                    /* Write to flash */
+                    if (!flashif_write(MAIN_APP_START_ADDR + fwBytesWritten, segmentBuffer, rxSegmentSize)) {
                         state = BL_DONE_STATE;
                         man_sendNack();
                         break;
                     }
-                    fwBytesWritten += BL_UPDATE_FW_PACKET_DATA_SIZE;
+                    fwBytesWritten += rxSegmentSize;
+                    log_pInfo("Written %u/%u Bytes", fwBytesWritten, fwLength);
 
                     /* Check for completion */
                     if (fwBytesWritten >= fwLength) {
                         man_createBLPacketSingle(&packet_tx, BL_SUCCESS_RES_PACKET);
                         man_write(&packet_tx);
+                        log_pInfo("Received all data");
                         state = BL_DONE_STATE;
                     } else {
+                        /* Clear FW Data Buffer */
+                        canif_clearQueue(CAN_ID_BOOTLOADER_DATA);
                         /* Send Data Ready */
                         man_createBLPacketSingle(&packet_tx, BL_DATARDY_RES_PACKET);
                         man_write(&packet_tx);                        

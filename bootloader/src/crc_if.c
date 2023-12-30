@@ -14,6 +14,21 @@ bool crcif_destruct(void) {
     return true;
 }
 
+uint8_t crcif_compute8(uint8_t* data, uint32_t length) {
+    crc_reset();
+    crc_set_polysize(CRC_CR_POLYSIZE_8);
+    crc_set_polynomial(0x07);
+    crc_set_initial(0);
+    crc_set_reverse_input(CRC_CR_REV_IN_NONE);
+    crc_reverse_output_disable();
+
+    for (uint32_t i = 0; i < length; i++) {
+        CRC_DR8 = data[i];
+    }
+
+    return CRC_DR8;
+}
+
 /**
  * @brief Compute 32bit crc based on CRC-32 Ethernet
  * 

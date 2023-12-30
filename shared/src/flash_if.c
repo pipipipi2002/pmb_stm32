@@ -23,7 +23,7 @@ void flashif_eraseMainApplication() {
 }
 
 /**
- * @brief write data into flash (multiple of 4 byte)
+ * @brief write data into flash 
  * 
  * @param address Start address of 32-bit write (address ends in 0 4 8 C)
  * @param data pointer to array of 1 byte data
@@ -40,11 +40,34 @@ bool flashif_write(const uint32_t address, const uint8_t* data, const uint32_t l
     // Check 32-bit alignment
     if (address & 0b11) return false;
 
+    uint32_t i = 0;
+    uint32_t data32 = 0xFFFFFFFF;
+    
     flash_unlock();
-    for (uint32_t i = 0; i < length/4; i++) {
-        uint32_t data32 = data[i*4] | (data[i*4+1] << 8) | (data[i*4+2] << 16) | (data[i*4+3] << 24);
-        flash_program_word(address + (i * 4), data32);
+    while (i + 4 <= length) {
+        data32 = data[i] | (data[i+1] << 8) | (data[i+2] << 16) | (data[i+3] << 24);
+        flash_program_word(address + i, data32);
+        i += 4;
     }
+    
+    if (length - i) {
+        switch (length - i) {
+            case 1: {
+                data32 = data[i] | (0xFFFFFF00);   
+            } break;
+            case 2: {
+                data32 = data[i] | (data[i+1] << 8) | 0xFFFF0000;
+            } break;
+            case 3: {
+                data32 = data[i] | (data[i+1] << 8) | (data[i+2] << 16) | 0xFF000000;
+            } break;
+            default:
+                break;
+        }       
+        
+        flash_program_word(address + i, data32);
+    }
+
     flash_lock();
 
     return true;
