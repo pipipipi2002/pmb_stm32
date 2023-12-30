@@ -16,8 +16,9 @@
 #define PACKET_TYPE_UTILITY         (2U)
 #define PACKET_CONSTRUCT_LENGTHTYPE(len, type) ((uint8_t) (len << 2) | type)
 
-#define PACKET_UTILITY_ACK_DATA     (0xAA)
-#define PACKET_UTILITY_RETX_DATA    (0x55)
+#define PACKET_UTILITY_ACK_DATA     (0x35)
+#define PACKET_UTILITY_RETX_DATA    (0x67)
+#define PACKET_UTILITY_NACK_DATA    (0xDE)
 
 typedef struct {
     uint8_t lenType;
@@ -28,6 +29,7 @@ typedef struct {
 void man_setup(void);
 void man_update(void);
 
+void man_sendNack(void);
 void man_write(man_packet_ts* packet);
 void man_read(man_packet_ts* packet);
 bool man_packetAvailable(void);

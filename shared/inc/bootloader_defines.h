@@ -28,6 +28,4 @@
 
 #define BL_SUCCESS_RES_PACKET           (0x69)
 
-#define BL_NACK_PACKET                  (0xDE)
-
 #endif // INC_BOOTLOADER_DEFINES_H

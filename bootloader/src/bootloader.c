@@ -20,7 +20,7 @@
     #error "BOOTLOADER OPTION NOT SELECTED"
 #endif
 
-#define MASTER_TIMEOUT          (5000U)
+#define MASTER_TIMEOUT          (10000U)
 #define CAN_HB_TIMEOUT          (1000U)
 
 typedef enum {
@@ -39,7 +39,7 @@ typedef enum {
 static bl_state_te state = BL_SYNC_STATE;
 static uint32_t fwLength = 0;
 static uint32_t fwBytesWritten = 0;
-static man_packet_ts packet_tx, packet_rx, nack;
+static man_packet_ts packet_tx, packet_rx;
 static canMsg_tu canHbMsg = {.heartbeatId = BB_HEARTBEAT_ID_PMB};
 
 static timeout_ts masterTime, canHbTime;
@@ -59,6 +59,7 @@ int main (void) {
     system_systickInit();
     setup();
     log_pInfo("Power Monitoring Board AUV4, Bootloader OK ");
+    gpio_clear(PMB_NERROR_PORT, PMB_NERROR_PIN);
 
     /* Supply power */
     gpio_clear(PMB_RELAY_OFF_PORT, PMB_RELAY_OFF_PIN);          // Latch pwoer to PMB 
@@ -68,7 +69,6 @@ int main (void) {
     /* Bootloader preparation */
     timeout_setup(&canHbTime, CAN_HB_TIMEOUT, true);
     timeout_setup(&masterTime, MASTER_TIMEOUT, false);
-    man_createBLPacketSingle(&nack, BL_NACK_PACKET);
 
     while (state != BL_DONE_STATE) {
         if (timeout_hasElapsed(&masterTime) == true) {
@@ -115,7 +115,7 @@ int main (void) {
                         timeout_reset(&masterTime);
                     } else {
                         state = BL_DONE_STATE;
-                        man_write(&nack);
+                        man_sendNack();
                         break;
                     }
                 }
@@ -135,7 +135,7 @@ int main (void) {
                         timeout_reset(&masterTime);
                     } else {
                         state = BL_DONE_STATE;
-                        man_write(&nack);
+                        man_sendNack();
                         break;
                     }
                 }
@@ -155,7 +155,7 @@ int main (void) {
                         timeout_reset(&masterTime);
                     } else {
                         state = BL_DONE_STATE;
-                        man_write(&nack);
+                        man_sendNack();
                         break;
                     }
                 }
@@ -180,14 +180,14 @@ int main (void) {
                     /* Check data length */
                     if ((packet_rx.lenType >> 2) != BL_UPDATE_FW_PACKET_DATA_SIZE) {
                         state = BL_DONE_STATE;
-                        man_write(&nack);
+                        man_sendNack();
                         break;
                     }
 
                     /* Always write 16 bytes as chip only supports half-word/word write */
                     if (!flashif_write(MAIN_APP_START_ADDR + fwBytesWritten, packet_rx.data, BL_UPDATE_FW_PACKET_DATA_SIZE)) {
                         state = BL_DONE_STATE;
-                        man_write(&nack);
+                        man_sendNack();
                         break;
                     }
                     fwBytesWritten += BL_UPDATE_FW_PACKET_DATA_SIZE;
@@ -237,6 +237,7 @@ static void destruct(void) {
     crcif_destruct();
     uart1if_destruct();
     system_systickDeinit();
+    gpio_set(PMB_NERROR_PORT, PMB_NERROR_PIN);
 }
 
 static void jumpToApplication(void) {

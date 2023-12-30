@@ -168,7 +168,7 @@ uint8_t canif_sendData (uint8_t* data, uint8_t size, uint32_t id) {
         /* Send full 8 bytes */
         res += can_transmit(CAN1, id, false, false, 8, &(data[bytesSent]));
         bytesSent += 8;
-        system_delayMs(10); // To prevent data dropped 
+        system_delayMs(1); // To prevent data dropped 
     }
     if (bytesSent != size) {
         /* Send remaining bytes */

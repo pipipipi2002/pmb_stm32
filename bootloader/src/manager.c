@@ -17,6 +17,7 @@ static uint8_t crcBytesReceived = 0;
 static man_packet_ts tempPacket = {.lenType = 0, .data = {0}, .crc = 0};
 static man_packet_ts retxPacket = {.lenType = 0, .data = {0}, .crc = 0};
 static man_packet_ts ackPacket = {.lenType = 0, .data = {0}, .crc = 0};
+static man_packet_ts nackPacket = {.lenType = 0, .data = {0}, .crc = 0};
 static man_packet_ts lastTxPacket = {.lenType = 0, .data = {0}, .crc = 0};
 
 /* Packet Recv Circular Buffer */
@@ -38,6 +39,7 @@ static void createUtilityPacket(man_packet_ts* packet, uint8_t data);
 void man_setup(void) {
     createUtilityPacket(&retxPacket, PACKET_UTILITY_RETX_DATA);
     createUtilityPacket(&ackPacket, PACKET_UTILITY_ACK_DATA);
+    createUtilityPacket(&nackPacket, PACKET_UTILITY_NACK_DATA);
 }
 
 /**
@@ -145,6 +147,9 @@ void man_update(void) {
     }
 }
 
+void man_sendNack(void) {
+    man_write(&nackPacket);
+}
 
 /**
  * @brief Send packet through can line and store it in the transmit buffer 
