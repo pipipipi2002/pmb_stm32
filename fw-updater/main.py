@@ -160,6 +160,17 @@ def readFromBuffer(n: int) -> bytearray:
     del rxCanBuffer[0:n]
     return bytearray(removed)
 
+async def waitForHeartbeat(reader):
+    while True:
+        msg = reader.get_message(timeout=5)
+        if (msg is None):
+            await asyncio.sleep(0.1)
+            continue
+        
+        if (msg.arbitration_id == CAN_HEARTBEAT_ID):
+            if (msg.data[0] == CAN_PMB1_HEARTBEAT_ID or msg.data[0] == CAN_PMB2_HEARTBEAT_ID):
+                return True
+
 async def waitForSingleBytePacket(queue, byte):
     packet:Packet = await queue.get()
     try:
@@ -195,17 +206,6 @@ async def waitForDataBytePacket(queue, type, word):
         log.error(e)
         log.error(e.getVerbose())
         exit(1)
-
-async def waitForHeartbeat(reader):
-    while True:
-        msg = reader.get_message(timeout=5)
-        if (msg is None):
-            await asyncio.sleep(0.1)
-            continue
-        
-        if (msg.arbitration_id == CAN_HEARTBEAT_ID):
-            if (msg.data[0] == CAN_PMB1_HEARTBEAT_ID or msg.data[0] == CAN_PMB2_HEARTBEAT_ID):
-                return True
             
 async def packetBuilder(bus, reader, queue):
     global rxCanBuffer
@@ -368,7 +368,6 @@ async def main(log: logging.Logger):
         log.info("Waiting for Update Success Packet")
         await waitForSingleBytePacket(packet_queue, BL_SUCCESS_RES_PACKET)
         log.warning("Received Success Update Packet")
-
 
 if __name__ == "__main__":
     log = get_logger("fw_log")
