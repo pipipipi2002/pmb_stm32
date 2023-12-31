@@ -32,6 +32,8 @@
  */
 // Interrupt Vector Table in SRAM 
 volatile uint32_t vectorTable[48] __attribute__((section(".ramvectortable")));
+// Dev ID to be stored in flash
+__attribute__((section(".dev_id"))) volatile uint32_t device_id = DEVICE_ID;
 
 // Telemetry Data
 static uint16_t batt_voltage = 0;

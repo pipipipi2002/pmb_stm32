@@ -15,9 +15,12 @@ static void canif_receive(uint8_t fifo);
 #include "bootloader_defines.h"
 
 #define BOOT_SERVER_MSG_QUEUE_BUFFER_SIZE       (64)
+#define BOOT_DATA_MSG_QUEUE_BUFFER_SIZE       (1024 + 512)
 
 static uint8_t rxBootServerBuffer[BOOT_SERVER_MSG_QUEUE_BUFFER_SIZE];
 static cqueue_ts cq_rxCanBootServer = {0};
+static uint8_t rxBootDataBuffer[BOOT_DATA_MSG_QUEUE_BUFFER_SIZE];
+static cqueue_ts cq_rxCanBootData = {0};
 
 #elif defined (MAINAPP)
 #define VEH_MSG_QUEUE_BUFFER_SIZE               (32)
@@ -50,6 +53,7 @@ bool canif_setup(void) {
     /* Initialise Queue for RX */
     #if defined (BOOTLOADER)
     cqueue_init(&cq_rxCanBootServer, rxBootServerBuffer, BOOT_SERVER_MSG_QUEUE_BUFFER_SIZE);
+    cqueue_init(&cq_rxCanBootData, rxBootDataBuffer, BOOT_DATA_MSG_QUEUE_BUFFER_SIZE);
     #elif defined (MAINAPP)
     cqueue_init(&cq_rxCanVehMsg, rxVehBuffer, VEH_MSG_QUEUE_BUFFER_SIZE);
     #endif // Variant Switch
@@ -168,7 +172,7 @@ uint8_t canif_sendData (uint8_t* data, uint8_t size, uint32_t id) {
         /* Send full 8 bytes */
         res += can_transmit(CAN1, id, false, false, 8, &(data[bytesSent]));
         bytesSent += 8;
-        system_delayMs(10); // To prevent data dropped 
+        system_delayMs(1); // To prevent data dropped 
     }
     if (bytesSent != size) {
         /* Send remaining bytes */
@@ -199,8 +203,15 @@ static void canif_receive(uint8_t fifo) {
 
     #if defined (BOOTLOADER)
     switch (rxFrame.id) {
-        case CAN_ID_BOOTLOADER_SERVER:
-            uint8_t recv = cqueue_pushn(&cq_rxCanBootServer, rxFrame.data, rxFrame.len);
+        uint8_t recv;
+        case CAN_ID_BOOTLOADER:
+            recv = cqueue_pushn(&cq_rxCanBootServer, rxFrame.data, rxFrame.len);
+            if (recv != rxFrame.len) {
+                log_pError("CAN Queue Full, dropped %d msgs.", rxFrame.len - recv);
+            }
+            break;
+        case CAN_ID_BOOTLOADER_DATA:
+            recv = cqueue_pushn(&cq_rxCanBootData, rxFrame.data, rxFrame.len);
             if (recv != rxFrame.len) {
                 log_pError("CAN Queue Full, dropped %d msgs.", rxFrame.len - recv);
             }
@@ -236,10 +247,20 @@ bool canif_getRxDataReady(void) {
  * @param[out] frame pointer to can frame
  * @return true if data copied successfully
  */
-bool canif_getRxData(uint8_t* data) {
+bool canif_getRxData(const uint8_t id, uint8_t* data) {
     #if defined (BOOTLOADER)
-    if (cqueue_pop(&cq_rxCanBootServer, data)) {
-        return true;
+    switch (id) {
+        case CAN_ID_BOOTLOADER: {
+            if (cqueue_pop(&cq_rxCanBootServer, data)) {
+                return true;
+            }
+        } break;
+
+        case CAN_ID_BOOTLOADER_DATA: {
+            if (cqueue_pop(&cq_rxCanBootData, data)) {
+                return true;
+            }
+        } break;
     }
     #elif defined (MAINAPP)
     if (cqueue_pop(&cq_rxCanVehMsg, data)) {
@@ -251,3 +272,42 @@ bool canif_getRxData(uint8_t* data) {
     return false;
 }
 
+/**
+ * @brief Return the pointer to the buffer used in the circular queue
+ * 
+ * @param id the CAN ID that is associated to the buffer/queue
+ * @return uint8_t* Pointer to the uint8_t array buffer
+ */
+uint8_t* canif_getQueuePointer(const uint8_t id) {
+    #if defined (BOOTLOADER)
+    switch(id) {
+        case CAN_ID_BOOTLOADER: {
+            return rxBootServerBuffer;
+        } break;
+
+        case CAN_ID_BOOTLOADER_DATA: {
+            return rxBootDataBuffer;
+        } break;
+    }
+    #elif defined (MAINAPP)
+    return rxVehBuffer;
+    #endif // Variant Switch
+
+    return 0;
+}
+
+void canif_clearQueue(const uint8_t id) {
+    #if defined (BOOTLOADER)
+    switch(id) {
+        case CAN_ID_BOOTLOADER: {
+            cqueue_reset(&cq_rxCanBootServer);
+        } break;
+
+        case CAN_ID_BOOTLOADER_DATA: {
+            cqueue_reset(&cq_rxCanBootData);
+        } break;
+    }
+    #elif defined (MAINAPP)
+    cqueue_reset(&cq_rxCanVehMsg);
+    #endif // Variant Switch
+}

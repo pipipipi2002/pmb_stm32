@@ -1,9 +1,12 @@
 #ifndef INC_BOARD_DEF_H
 #define INC_BOARD_DEF_H
 
+#include "common_defines.h"
 //
 // Software Configurations
 //
+#define DEVICE_ID                  (0xBEEF6969)
+
 #define PMB_ID                     (5)
 #define PMB_CURRENT_SCALE          (2)
 #define PMB_MAX_CURR               (80)
@@ -87,4 +90,4 @@
 #define SSD1306_Reset_Pin           (PMB_DISPLAY_RESET_PIN)
 #define SSD1306_INCLUDE_FONT_6x8    (1)
 
-#endif // INC_BOARD_DEF_H
+#endif // INC_BOARD_DEF_H 

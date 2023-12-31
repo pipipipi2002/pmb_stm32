@@ -9,9 +9,7 @@
  */
 void cqueue_init(cqueue_ts* q, uint8_t* buff, uint32_t buff_size) {
     q->data = buff;
-    for (uint32_t i = 0; i < buff_size; i++) {
-        q->data[i] = 0;
-    }
+    memset(q->data, 0xFF, buff_size);
     q->data_max_size = buff_size;
     q->head = 0;
     q->tail = 0;
@@ -112,4 +110,11 @@ bool cqueue_pop(cqueue_ts* q, uint8_t* data) {
     q->size--;
 
     return true;
+}
+
+void cqueue_reset(cqueue_ts* q) {
+    memset(q->data, 0xFF, q->data_max_size);
+    q->head = 0;
+    q->tail = 0;
+    q->size = 0;
 }

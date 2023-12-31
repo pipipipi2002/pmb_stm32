@@ -1,4 +1,7 @@
 crcmod==1.7
+git-python==1.0.3
+gitdb==4.0.11
+GitPython==3.1.40
 msgpack==1.0.7
 multipledispatch==1.0.0
 packaging==23.2
@@ -6,6 +9,7 @@ python-can==4.3.0
 python-can-canine==0.2.5
 pyusb==1.2.1
 setuptools==68.0.0
+smmap==5.0.1
 typing_extensions==4.8.0
 wheel==0.37.1
 wrapt==1.16.0
