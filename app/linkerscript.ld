@@ -42,6 +42,8 @@ SECTIONS
 
 		*(.vectors)	            /* Vector table */
 		. = ALIGN(16);
+		KEEP(*(.dev_id))		/* Device Id */
+		. = ALIGN(4);
 		*(.text*)	            /* Program code */
 		. = ALIGN(4);
 		*(.rodata*)	            /* Read-only data */

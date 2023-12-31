@@ -1,13 +1,18 @@
 #include "flash_if.h"
 #include <libopencm3/stm32/flash.h>
+#include "metadata.h"
 
 // There are 63 Page of 2 KiBytes each. 1 sector makes up 2 page
-// Bootloader takes up 32kiB -> 16 page (page 0 - 15)
-
+// Bootloader takes up 30kiB -> 15 page (page 0 - 14)
+// AMD takes up 2KiB -> 1 Page (page 15)
 // Main flash memory can be programmed 16 bits at a time (half word)
 // Only write if the addressed has been erased (unless 0x0000 is being programmed)
 // Addressed must not be write-protected by the FLASH_WRPR register
 
+#define BOOTLOADER_PAGE_START   (0)
+#define BOOTLOADER_PAGE_END     (14)
+#define APP_METADATA_PAGE_START (15)
+#define APP_METADATA_PAGE_END   (15)
 #define MAIN_APP_PAGE_START     (16)
 #define MAIN_APP_PAGE_END       (63)
 #define MEMORY_PAGE_SIZE        (0x800)
@@ -19,6 +24,22 @@ void flashif_eraseMainApplication() {
         flash_erase_page(MAIN_APP_START_ADDR + (MEMORY_PAGE_SIZE * i));
         /* End erasing 0x08008000 + 0x800 * 47 = 0x0801F800 */
     }
+    flash_lock();
+}
+
+void flashif_eraseAppMetaData(void) {
+    flash_unlock();
+    flash_erase_page(AMD_START_ADDR);
+    flash_lock();
+}
+
+void flashif_writeAppMetaData(fwMeta_ts* metadata) {
+    flash_unlock();
+    flash_program_word(AMD_START_ADDR, metadata->sentinel);
+    flash_program_word(AMD_START_ADDR + 4, metadata->device_id);
+    flash_program_word(AMD_START_ADDR + 8, metadata->version);
+    flash_program_word(AMD_START_ADDR + 12, metadata->length);
+    flash_program_word(AMD_START_ADDR + 16, metadata->crc32);
     flash_lock();
 }
 

@@ -5,14 +5,15 @@
 
 // Shared Header Files
 #include "common_defines.h"
+#include "metadata.h"
+#include "bootloader_defines.h"
 #include "board_def.h"
 #include "system.h"
 #include "log.h"
+#include "manager.h"
 #include "uart_if.h"
 #include "gpio_if.h"
 #include "can_if.h"
-#include "bootloader_defines.h"
-#include "manager.h"
 #include "crc_if.h"
 #include "flash_if.h"
 
@@ -20,25 +21,44 @@
     #error "BOOTLOADER OPTION NOT SELECTED"
 #endif
 
-#define MASTER_TIMEOUT          (10000U)
+#define MASTER_TIMEOUT          (3000U)
 #define CAN_HB_TIMEOUT          (1000U)
 
 typedef enum {
-    BL_SYNC_STATE,
     BL_FUR_STATE,
     BL_DEVID_STATE,
     BL_FW_LENGTH_STATE,
+    BL_FW_CRC_STATE,
+    BL_FW_VER_STATE,
     BL_ERASE_APP_STATE,
     BL_RECV_FW_STATE,
-    BL_DONE_STATE
+    BL_DONE_STATE,
 } bl_state_te;
 
 /*
  * Global variables
  */
-static bl_state_te state = BL_SYNC_STATE;
+
+/**
+ * @brief App meta data which is only written during fw flashing.
+ *      During Fw Flashing, appMetaData will be cleared together with app.
+ *      This information will be used for validation before jumping to app.
+ *      If calculated crc is not equal to stored crc, the meta data will be 
+ *      cleared and sentinel set to NOTOK. 
+ */
+__attribute__((section (".fw_meta"))) fwMeta_ts appMetaData = {
+    .sentinel = FW_SENTINEL_NOTOK,      // Validity (values are kept in boot)
+    .device_id = DEVICE_ID,             // Device ID (values are kept in boot)
+    .version = 0xFFFFFFFF,              // git commit version -> FROM SERVER
+    .length = 0xFFFFFFFF,               // Firmware Length -> FROM SERVER
+    .crc32 = 0xFFFFFFFF,                // CRC-32 of the firmware -> FROM SERVER
+};
+
+static bl_state_te state = BL_FUR_STATE;
 static uint32_t fwLength = 0;
 static uint32_t fwBytesWritten = 0;
+static uint32_t fwCRC = 0;
+static uint32_t fwVersion = 0;
 static man_packet_ts packet_tx, packet_rx;
 static canMsg_tu canHbMsg = {.heartbeatId = BB_HEARTBEAT_ID_PMB};
 
@@ -50,6 +70,7 @@ int main (void);
 static void setup(void);
 static void destruct(void);
 static void jumpToApplication(void);
+static bool validateApplication(void);
 
 /*
  * Function Definitions
@@ -80,33 +101,6 @@ int main (void) {
         }
 
         switch (state) {
-            case BL_SYNC_STATE: {
-                /* Check for SYNC packet */
-                if (man_packetAvailable()) {
-                    man_read(&packet_rx);
-                    
-                    /* Check SYNC data */
-                    if (man_isBLPacketSingle(&packet_rx, BL_SYNC_REQ_PACKET)) {
-                        log_pInfo("Received SYNC Packet");
-                        /* Send SYNCED msg */
-                        man_createBLPacketSingle(&packet_tx, BL_SYNCED_RES_PACKET);
-                        man_write(&packet_tx);
-                        log_pInfo("Sent SYNCED Packet");
-                        /* Transition to FUR state */
-                        state = BL_FUR_STATE;
-                        log_pInfo("Enter FUR State");
-                        /* Reset Time */
-                        timeout_reset(&masterTime);
-                        break;
-                    } else { // Wait for correct sync until timeout
-                        log_pError("Received unknown packet in SYNC state");
-                    }
-                }
-                /* Send Heartbeat */
-                if (timeout_hasElapsed(&canHbTime) == true) {
-                    canif_sendVehMsg(&canHbMsg, BB_CAN_HB_MSG_SIZE, BB_CAN_ID_HEARTBEAT);
-                }
-            } break;
             case BL_FUR_STATE: {
                 if (man_packetAvailable()) {
                     man_read(&packet_rx);
@@ -125,10 +119,11 @@ int main (void) {
                         timeout_reset(&masterTime);
                     } else {
                         log_pError("Received unknown packet in FUR state");
-                        state = BL_DONE_STATE;
-                        man_sendNack();
-                        break;
                     }
+                }
+                /* Send Heartbeat */
+                if (timeout_hasElapsed(&canHbTime) == true) {
+                    canif_sendVehMsg(&canHbMsg, BB_CAN_HB_MSG_SIZE, BB_CAN_ID_HEARTBEAT);
                 }
             } break;
             case BL_DEVID_STATE: {
@@ -166,13 +161,63 @@ int main (void) {
                         man_createBLPacketData(&packet_tx, BL_FWLEN_ACK_RES_PACKET, fwLength);
                         man_write(&packet_tx);
                         log_pInfo("Sent FWLEN ACK");
+                        /* Transition to FW CRC state */
+                        state = BL_FW_CRC_STATE;
+                        log_pInfo("Enter FW CRC State");
+                        /* Reset Time */
+                        timeout_reset(&masterTime);
+                    } else {
+                        log_pError("Received unknown packet in FW CRC state");
+                        state = BL_DONE_STATE;
+                        man_sendNack();
+                        break;
+                    }
+                }
+            } break;
+
+            case BL_FW_CRC_STATE: {
+                if (man_packetAvailable()) {
+                    man_read(&packet_rx);
+
+                    if (man_isBLPacketData(&packet_rx, BL_FWCRC_REQ_PACKET, 0)) {
+                        fwCRC = packet_rx.data[1] | (packet_rx.data[2] << 8) | (packet_rx.data[3] << 16) | (packet_rx.data[4] << 24);
+                        log_pInfo("Received FW CRC Packet: 0x%X", fwCRC);
+                        /* Send FW CRC ACK */
+                        man_createBLPacketData(&packet_tx, BL_FWCRC_ACK_RES_PACKET, fwCRC);
+                        man_write(&packet_tx);
+                        log_pInfo("Sent FW CRC ACK");
+                        /* Transition to VER App state */
+                        state = BL_FW_VER_STATE;
+                        log_pInfo("Enter FW VER State");
+                        /* Reset Time */
+                        timeout_reset(&masterTime);
+                    } else {
+                        log_pError("Received unknown packet in FW VER state");
+                        state = BL_DONE_STATE;
+                        man_sendNack();
+                        break;
+                    }
+                }
+            } break;
+
+            case BL_FW_VER_STATE: {
+                if (man_packetAvailable()) {
+                    man_read(&packet_rx);
+
+                    if (man_isBLPacketData(&packet_rx, BL_FWVER_REQ_PACKET, 0)) {
+                        fwVersion = packet_rx.data[1] | (packet_rx.data[2] << 8) | (packet_rx.data[3] << 16) | (packet_rx.data[4] << 24);
+                        log_pInfo("Received FW Version Packet: 0x%X", fwVersion);
+                        /* Send FW VER ACK */
+                        man_createBLPacketData(&packet_tx, BL_FWVER_ACK_RES_PACKET, fwVersion);
+                        man_write(&packet_tx);
+                        log_pInfo("Sent FW VER ACK");
                         /* Transition to Erase App state */
                         state = BL_ERASE_APP_STATE;
                         log_pInfo("Enter ERASE APP State");
                         /* Reset Time */
                         timeout_reset(&masterTime);
                     } else {
-                        log_pError("Received unknown packet in FWLEN state");
+                        log_pError("Received unknown packet in FW VER state");
                         state = BL_DONE_STATE;
                         man_sendNack();
                         break;
@@ -182,15 +227,28 @@ int main (void) {
 
             case BL_ERASE_APP_STATE: {
                 /* Erase main application */
+                flashif_eraseAppMetaData();
                 flashif_eraseMainApplication();
+
+                /* Write data to META */
+                fwMeta_ts meta = {
+                    .sentinel = FW_SENTINEL_OK,
+                    .device_id = BL_PMB_DEVID_MSG,
+                    .version = fwVersion,
+                    .length = fwLength,
+                    .crc32 = fwCRC
+                };
+                flashif_writeAppMetaData(&meta);
+
                 /* Transition to Receive FW state */
                 state = BL_RECV_FW_STATE;
                 /* Clear FW Data Buffer */
                 canif_clearQueue(CAN_ID_BOOTLOADER_DATA);
+
                 /* Send Data Ready */
-                man_createBLPacketSingle(&packet_tx, BL_DATARDY_RES_PACKET);
+                man_createBLPacketSingle(&packet_tx, BL_RECVRDY_RES_PACKET);
                 man_write(&packet_tx);    
-                log_pInfo("Sent Data Ready Packet");
+                log_pInfo("Sent Receive Ready Packet");
                 /* Reset Time */
                 timeout_reset(&masterTime);
             } break;
@@ -231,7 +289,7 @@ int main (void) {
                         /* Clear FW Data Buffer */
                         canif_clearQueue(CAN_ID_BOOTLOADER_DATA);
                         /* Send Data Ready */
-                        man_createBLPacketSingle(&packet_tx, BL_DATARDY_RES_PACKET);
+                        man_createBLPacketSingle(&packet_tx, BL_RECVRDY_RES_PACKET);
                         man_write(&packet_tx);                        
                     }
                     /* Reset Time */
@@ -240,15 +298,13 @@ int main (void) {
             } break;
 
             default: {
-                state = BL_SYNC_STATE;
+                state = BL_FUR_STATE;
             } break;
         }
         man_update();
     }
 
     /* BL_DONE_STATE */
-
-    /* Firmware validation */
 
     /* Jump to App */
     jumpToApplication();
@@ -272,7 +328,33 @@ static void destruct(void) {
     gpio_set(PMB_NERROR_PORT, PMB_NERROR_PIN);
 }
 
+static bool validateApplication(void) {
+    if (appMetaData.sentinel == FW_SENTINEL_NOTOK) {
+        log_pError("Sentinel Not Ok");
+        return false;
+    }
+
+    if (appMetaData.device_id != BL_PMB_DEVID_MSG) {
+        log_pError("Device ID invalid: 0x%X", appMetaData.device_id);
+        return false;
+    }
+
+    uint8_t* fwStartAddr = (uint8_t*) MAIN_APP_START_ADDR;
+    uint32_t computedCrc = crcif_compute32(fwStartAddr, appMetaData.length);
+    if (computedCrc != appMetaData.crc32) {
+        log_pError("App crc wrong. Expected: 0x%X, Computed: 0x%X", appMetaData.crc32, computedCrc);
+        return false;
+    }
+
+    log_pSuccess("Main App CRC OK");
+    log_pInfo("Using version: 0x%X", appMetaData.version);
+    return true;
+}
+
 static void jumpToApplication(void) {
+    /* Validate App */
+    if (!validateApplication()) return;
+
     /* Teardown */
     destruct();
 

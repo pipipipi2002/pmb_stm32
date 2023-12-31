@@ -43,7 +43,9 @@
         "tuple": "c",
         "type_traits": "c",
         "utility": "c",
-        "variant": "c"
+        "variant": "c",
+        "flash_if.h": "c",
+        "metadata.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/bin/"

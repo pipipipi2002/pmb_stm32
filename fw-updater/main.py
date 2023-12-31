@@ -4,10 +4,11 @@ import can
 import crcmod
 import logging
 import sys
+import asyncio
+import git
 from canine import CANineBus
 from time import sleep
 from logging.handlers import TimedRotatingFileHandler
-import asyncio
 from defines import *
 
 FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
@@ -40,7 +41,10 @@ def computeCrc32(data:bytearray) -> bytes:
     result = crc32(data)
     return result.to_bytes(4, "little")
 
-def bytesAsHexString(b:bytes) -> str:
+def bytesAsHexString(b:bytes, rev:bool) -> str:
+    if (bool):
+        b = b[::-1]
+    
     return "".join([f"0x{byte:02x} " for byte in b])
 
 class PacketException(Exception):
@@ -70,7 +74,7 @@ class Packet:
             self.crc = crc # little endian
 
     def __str__(self):
-        return f"Packet Information\nLentype: {bytesAsHexString(self.lenType)}\nLength: {self.getLength()}\nType: {self.getType()}\nCRC: {hex(self.getCrc())}\nBytes: {bytesAsHexString(self.toByteStream())}"
+        return f"Packet Information\nLentype: {bytesAsHexString(self.lenType, False)}\nLength: {self.getLength()}\nType: {self.getType()}\nCRC: {hex(self.getCrc())}\nBytes: {bytesAsHexString(self.toByteStream(), False)}"
 
     def getLength(self) -> int:
         return (int.from_bytes(self.lenType, "little") >> 2)
@@ -111,23 +115,9 @@ class Packet:
         lenType = (length << 2) | type
         return lenType.to_bytes(1, "little")
 
-def start_rx():
-    with can.Bus(interface='canine', bitrate=1000000) as bus:
-        try:
-            for msg in bus:
-                print(msg.arbitration_id)
-                print(msg.data)
-                return
-        except:
-            print("error")
-
-
 packetBuffer:list[Packet] = []
-
 retxPacket:Packet = Packet(Packet.constructLenType(PACKET_LENTYPE_SIZE, PACKET_TYPE_UTILITY), PACKET_UTILITY_RETX_DATA.to_bytes())
-
 lastTxPacket:Packet = Packet()
-
 rxCanBuffer:bytearray = bytearray()
 
 def sendPacket(bus: can.Bus, id, packet:Packet):
@@ -203,7 +193,7 @@ async def waitForDataBytePacket(queue, type, word):
         
     except PacketException as e:
         log.error(e)
-        log.error(e.getDiff())
+        log.error(e.getVerbose())
         exit(1)
 
 async def waitForHeartbeat(reader):
@@ -275,11 +265,23 @@ async def main(log: logging.Logger):
         bin_file = f.read()
         f.close()
 
-    log.info("Removing bootloader partition")
-    fw_bin_main_app = bin_file[BOOTLOADER_SIZE:]
+    fw_bin_main_app:bytes = bin_file[BOOTLOADER_SIZE+METADATA_SIZE:]
+    log.info("Removed bootloader partition")
 
-    fw_length = len(fw_bin_main_app)    
+    fw_device_id:int = int.from_bytes(fw_bin_main_app[FIRMWARE_DEVID_OFFSET:FIRMWARE_DEVID_OFFSET+4], "little")
+    log.info(f"Firmare device id: {hex(fw_device_id)}")
+
+    fw_length:int = len(fw_bin_main_app)    
     log.info(f"Firmware Length: {fw_length}")
+
+    fw_crc32_le:bytes = computeCrc32(fw_bin_main_app)
+    fw_crc = int.from_bytes(fw_crc32_le, "little");
+    log.info(f"Firmware CRC-32: {hex(fw_crc)}")
+
+    repo = git.Repo(search_parent_directories=True)
+    commit_sha = repo.head.object.hexsha
+    fw_version:int = int(commit_sha[:8], 16)
+    log.info(f"Firmware version: {hex(fw_version)}")
 
     with can.Bus(interface='canine', bitrate=1000000) as bus:
         reader = can.BufferedReader()
@@ -292,30 +294,22 @@ async def main(log: logging.Logger):
 
         # Start packet building task
         packetBuilder_task = asyncio.create_task(packetBuilder(bus, reader, packet_queue))
-
-        # Send Sync and wait for synced
-        syncPacket = Packet(Packet.constructLenType(1, PACKET_TYPE_NORMAL), BL_SYNC_REQ_PACKET.to_bytes())
-        log.info(f"Sending Sync Packet: {bytesAsHexString(BL_SYNC_REQ_PACKET.to_bytes())}")
-        sendPacket(bus, CAN_BOOTLOADER_ID, syncPacket)
-        log.info("Waiting for Synced Packet")
-        await waitForSingleBytePacket(packet_queue, BL_SYNCED_RES_PACKET)
-        log.warning("Received Synced Packet")
         
         # Send Firmware Update Request and wait for ACK
         furPacket = Packet(Packet.constructLenType(1, PACKET_TYPE_NORMAL), BL_FUR_REQ_PACKET.to_bytes())
-        log.info(f"Sending Firmware Update Request Packet: {bytesAsHexString(BL_FUR_REQ_PACKET.to_bytes())}")
+        log.info(f"Sending Firmware Update Request Packet: {bytesAsHexString(BL_FUR_REQ_PACKET.to_bytes(), False)}")
         sendPacket(bus, CAN_BOOTLOADER_ID, furPacket)
         log.info("Waiting for Firmware Update Request Ack Packet")
         await waitForSingleBytePacket(packet_queue, BL_FUR_ACK_RES_PACKET)
         log.warning("Received Firmware Update Request Ack Packet")
 
         # Send Device ID and wait for ACK
-        devIdPayload = bytearray(BL_DEVID_REQ_PACKET.to_bytes()) + bytearray(BL_PMB_DEVID_MSG.to_bytes(4, "little"))
+        devIdPayload = bytearray(BL_DEVID_REQ_PACKET.to_bytes()) + bytearray(fw_device_id.to_bytes(4, "little"))
         devIdPacket = Packet(Packet.constructLenType(5, PACKET_TYPE_NORMAL), devIdPayload)
-        log.info(f"Sending Device Id Packet: {bytesAsHexString(devIdPayload)}")
+        log.info(f"Sending Device Id Packet: {bytesAsHexString(devIdPayload, False)}")
         sendPacket(bus, CAN_BOOTLOADER_ID, devIdPacket)
         log.info("Waiting for Device ID Ack Packet")
-        await waitForDataBytePacket(packet_queue, BL_DEVID_ACK_RES_PACKET, BL_PMB_DEVID_MSG)
+        await waitForDataBytePacket(packet_queue, BL_DEVID_ACK_RES_PACKET, fw_device_id)
         log.warning("Received Device ID ACK Packet")
         
         # Send Firmware Size and wait for ACK
@@ -326,14 +320,32 @@ async def main(log: logging.Logger):
         log.info("Waiting for Firmware Length Ack Packet")
         await waitForDataBytePacket(packet_queue, BL_FWLEN_ACK_RES_PACKET, fw_length)
         log.warning("Received Firmware Length Ack Packet")
+
+        # Send CRC and wait for ACK
+        fwCRCPayload = bytearray(BL_FWCRC_REQ_PACKET.to_bytes()) + bytearray(fw_crc.to_bytes(4, "little"))
+        fwCRCPacket = Packet(Packet.constructLenType(5, PACKET_TYPE_NORMAL), fwCRCPayload)
+        log.info(f"Sending Firmware CRC Packet: {hex(fw_crc)}")
+        sendPacket(bus, CAN_BOOTLOADER_ID, fwCRCPacket)
+        log.info("Waiting for Firmware CRC Ack Packet")
+        await waitForDataBytePacket(packet_queue, BL_FWCRC_ACK_RES_PACKET, fw_crc)
+        log.warning("Received Firmware CRC Ack Packet")
+
+        # Send Version and wait for ACK
+        fwVerPayload = bytearray(BL_FWVER_REQ_PACKET.to_bytes()) + bytearray(fw_version.to_bytes(4, "little"))
+        fwVerPacket = Packet(Packet.constructLenType(5, PACKET_TYPE_NORMAL), fwVerPayload)
+        log.info(f"Sending Firmware Version Packet: {hex(fw_version)}")
+        sendPacket(bus, CAN_BOOTLOADER_ID, fwVerPacket)
+        log.info("Waiting for Firmware Version Ack Packet")
+        await waitForDataBytePacket(packet_queue, BL_FWVER_ACK_RES_PACKET, fw_version)
+        log.warning("Received Firmware Version Ack Packet")
         
         # (wait for Data Ready) Start Firmware Update
         bytesSent: int = 0    
         while (bytesSent < fw_length):
             # Wait for data ready
-            log.info("Waiting for Data Ready Packet")
-            await waitForSingleBytePacket(packet_queue, BL_DATARDY_RES_PACKET)
-            log.warning("Received Data Ready Packet")
+            log.info("Waiting for Receive Ready Packet")
+            await waitForSingleBytePacket(packet_queue, BL_RECVRDY_RES_PACKET)
+            log.warning("Received Receive Ready Packet")
 
             # Check length to send
             lenToSend = BL_FW_DATA_SEG_SIZE if (bytesSent +  BL_FW_DATA_SEG_SIZE <= fw_length) else (fw_length - bytesSent)
@@ -342,7 +354,7 @@ async def main(log: logging.Logger):
             # Send FW data to DATA ID
             log.info("Sending data over...")
             frameSent = sendData(bus, CAN_BOOTLOADER_DATA_ID, fwDataSegment, lenToSend)
-            log.info(f"[{lenToSend+bytesSent}/{fw_length}] Sent {lenToSend} bytes over {frameSent} CAN frames")
+            log.warning(f"[{lenToSend+bytesSent}/{fw_length}] Sent {lenToSend} bytes over {frameSent} CAN frames")
 
             # Send FW data sent packet
             fwDataSentPayload = bytearray(BL_DATASENT_REQ_PACKET.to_bytes()) + bytearray(lenToSend.to_bytes(4, "little"))

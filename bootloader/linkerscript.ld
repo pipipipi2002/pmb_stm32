@@ -21,8 +21,10 @@
 /* Define memory regions. */
 MEMORY
 {
-	rom 	 (rx)  : ORIGIN = 0x08000000, LENGTH = 32k        /* FLASH */
-	ram 	 (rwx) : ORIGIN = 0x20000000, LENGTH = 16k         /* SRAM */
+	boot_rom  	(rx)  : ORIGIN = 0x08000000, LENGTH = 30k      	/* Bootloader FLASH */
+	amd_rom		(rx)  : ORIGIN = 0x08007800, LENGTH = 2k	  	/* App Meta Data */
+	app_rom		(rx)  : ORIGIN = 0x08008000, LENGTH = 98k		/* App FLASH */
+	ram 	 	(rwx) : ORIGIN = 0x20000000, LENGTH = 16k       /* SRAM */
 }
 
 /* Enforce emmition of the vector table. */
@@ -34,6 +36,10 @@ ENTRY(reset_handler)
 /* Define sections. */
 SECTIONS
 {
+	.fw_meta : {
+		KEEP (*(.fw_meta))				
+	} >amd_rom
+
 	.text : {
 		*(.vectors)	            /* Vector table */
 		. = ALIGN(16);
@@ -41,7 +47,7 @@ SECTIONS
 		. = ALIGN(4);
 		*(.rodata*)	            /* Read-only data */
 		. = ALIGN(4);
-	} >rom
+	} >boot_rom
 
 	/* C++ Static constructors/destructors, also used for __attribute__
 	 * ((constructor)) and the likes */
@@ -50,21 +56,21 @@ SECTIONS
 		__preinit_array_start = .;
 		KEEP (*(.preinit_array))
 		__preinit_array_end = .;
-	} >rom
+	} >boot_rom
 	.init_array : {
 		. = ALIGN(4);
 		__init_array_start = .;
 		KEEP (*(SORT(.init_array.*)))
 		KEEP (*(.init_array))
 		__init_array_end = .;
-	} >rom
+	} >boot_rom
 	.fini_array : {
 		. = ALIGN(4);
 		__fini_array_start = .;
 		KEEP (*(.fini_array))
 		KEEP (*(SORT(.fini_array.*)))
 		__fini_array_end = .;
-	} >rom
+	} >boot_rom
 
 	/*
 	 * Another section used by C++ stuff, appears when using newlib with
@@ -72,12 +78,12 @@ SECTIONS
 	 */
 	.ARM.extab : {
 		*(.ARM.extab*)
-	} >rom
+	} >boot_rom
 	.ARM.exidx : {
 		__exidx_start = .;
 		*(.ARM.exidx*)
 		__exidx_end = .;
-	} >rom
+	} >boot_rom
 
 	. = ALIGN(4);
 	_etext = .;
@@ -94,7 +100,7 @@ SECTIONS
 		*(.ramtext*)    /* "text" functions to run in ram */
 		. = ALIGN(4);
 		_edata = .;
-	} >ram AT >rom
+	} >ram AT >boot_rom
 	_data_loadaddr = LOADADDR(.data);
 
 	.bss : {

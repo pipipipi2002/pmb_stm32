@@ -50,6 +50,9 @@ uint32_t crcif_compute32(uint8_t* data, uint32_t length) {
     
     /* Resets to default CRC-32 polynomial (ethernet) */
     crc_reset(); 
+    crc_set_initial(0xFFFFFFFF);
+    crc_set_polysize(CRC_CR_POLYSIZE_32);
+    crc_set_polynomial(CRC_POL_DEFAULT);
     /* For each input, perform per Byte bit-reversal */
     crc_set_reverse_input(CRC_CR_REV_IN_BYTE);
     /* No reversal for output, as hardware only can reverse the entire word */
