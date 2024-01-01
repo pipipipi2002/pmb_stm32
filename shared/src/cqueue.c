@@ -112,6 +112,11 @@ bool cqueue_pop(cqueue_ts* q, uint8_t* data) {
     return true;
 }
 
+/**
+ * @brief Clear the buffer to 0xFF and reset the queue supporting data
+ * 
+ * @param q pointer to queue
+ */
 void cqueue_reset(cqueue_ts* q) {
     memset(q->data, 0xFF, q->data_max_size);
     q->head = 0;

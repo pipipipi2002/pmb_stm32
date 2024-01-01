@@ -14,7 +14,7 @@
         "firmware.h": "c",
         "i2c.h": "c",
         "i2c_common_v2.h": "c",
-        "board_def.h": "c",
+        "board_defines.h": "c",
         "uart.h": "c",
         "ssd1306.h": "c",
         "retarget.h": "c",

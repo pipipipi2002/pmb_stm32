@@ -1,6 +1,6 @@
 #include <libopencm3/stm32/gpio.h>
 
-#include "board_def.h"
+#include "board_defines.h"
 
 #include "gpio_if.h"
 #include "log.h"

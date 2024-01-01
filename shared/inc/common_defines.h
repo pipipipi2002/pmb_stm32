@@ -14,4 +14,12 @@
 #define MAIN_APP_START_ADDR     (AMD_START_ADDR + AMD_SIZE)
 #define MAIN_APP_SIZE_MAX       ((1024U * 128U) - (BOOTLOADER_SIZE + AMD_SIZE))
 
+#define BOOTLOADER_PAGE_START   (0)
+#define BOOTLOADER_PAGE_END     (14)
+#define APP_METADATA_PAGE_START (15)
+#define APP_METADATA_PAGE_END   (15)
+#define MAIN_APP_PAGE_START     (16)
+#define MAIN_APP_PAGE_END       (63)
+#define MEMORY_PAGE_SIZE        (0x800)
+
 #endif

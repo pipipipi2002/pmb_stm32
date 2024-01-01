@@ -3,7 +3,7 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/nvic.h>
 
-#include "board_def.h"
+#include "board_defines.h"
 #include "can_if.h"
 #include "cqueue.h"
 #include "log.h"
@@ -248,8 +248,8 @@ bool canif_getRxDataReady(void) {
  * @return true if data copied successfully
  */
 bool canif_getRxData(const uint8_t id, uint8_t* data) {
-    #if defined (BOOTLOADER)
     switch (id) {
+    #if defined (BOOTLOADER)
         case CAN_ID_BOOTLOADER: {
             if (cqueue_pop(&cq_rxCanBootServer, data)) {
                 return true;
@@ -261,12 +261,14 @@ bool canif_getRxData(const uint8_t id, uint8_t* data) {
                 return true;
             }
         } break;
-    }
     #elif defined (MAINAPP)
-    if (cqueue_pop(&cq_rxCanVehMsg, data)) {
-        return true;
-    }
+        default: {
+            if (cqueue_pop(&cq_rxCanVehMsg, data)) {
+                return true;
+            }
+        } break;
     #endif // Variant Switch
+    }
     
     log_pError("Queue Empty");
     return false;
@@ -279,8 +281,8 @@ bool canif_getRxData(const uint8_t id, uint8_t* data) {
  * @return uint8_t* Pointer to the uint8_t array buffer
  */
 uint8_t* canif_getQueuePointer(const uint8_t id) {
-    #if defined (BOOTLOADER)
     switch(id) {
+    #if defined (BOOTLOADER)
         case CAN_ID_BOOTLOADER: {
             return rxBootServerBuffer;
         } break;
@@ -288,17 +290,24 @@ uint8_t* canif_getQueuePointer(const uint8_t id) {
         case CAN_ID_BOOTLOADER_DATA: {
             return rxBootDataBuffer;
         } break;
-    }
     #elif defined (MAINAPP)
-    return rxVehBuffer;
+        default: {
+            return rxVehBuffer;
+        } break;
     #endif // Variant Switch
+    }
 
     return 0;
 }
 
+/**
+ * @brief Clear the circular buffer by CAN ID
+ * 
+ * @param id CAN ID to clear
+ */
 void canif_clearQueue(const uint8_t id) {
-    #if defined (BOOTLOADER)
     switch(id) {
+    #if defined (BOOTLOADER)
         case CAN_ID_BOOTLOADER: {
             cqueue_reset(&cq_rxCanBootServer);
         } break;
@@ -306,8 +315,10 @@ void canif_clearQueue(const uint8_t id) {
         case CAN_ID_BOOTLOADER_DATA: {
             cqueue_reset(&cq_rxCanBootData);
         } break;
-    }
     #elif defined (MAINAPP)
-    cqueue_reset(&cq_rxCanVehMsg);
+        default: {
+            cqueue_reset(&cq_rxCanVehMsg);
+        } break;
     #endif // Variant Switch
+    }
 }

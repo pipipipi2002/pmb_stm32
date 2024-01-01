@@ -4,16 +4,30 @@
 
 static uint8_t crcif_reverseBit(uint8_t byte);
 
+/**
+ * @brief Setup Step
+ */
 bool crcif_setup(void) {
     rcc_periph_clock_enable(RCC_CRC);
     return true;
 }
 
+/**
+ * @brief Teardown step
+ * 
+ */
 bool crcif_destruct(void) {
     rcc_periph_clock_disable(RCC_CRC);
     return true;
 }
 
+/**
+ * @brief Compute CRC-8 
+ * 
+ * @param data Pointer to byte array 
+ * @param length Length of the byte array
+ * @return uint8_t CRC-8 result
+ */
 uint8_t crcif_compute8(uint8_t* data, uint32_t length) {
     crc_reset();
     crc_set_polysize(CRC_CR_POLYSIZE_8);
@@ -47,16 +61,12 @@ uint32_t crcif_compute32(uint8_t* data, uint32_t length) {
     // 4b. XOR the result of 4a with 0xFFFFFFFF
     // Result: 32bit CRC with Little Byte Endian format
 
-    
-    /* Resets to default CRC-32 polynomial (ethernet) */
-    crc_reset(); 
-    crc_set_initial(0xFFFFFFFF);
-    crc_set_polysize(CRC_CR_POLYSIZE_32);
-    crc_set_polynomial(CRC_POL_DEFAULT);
-    /* For each input, perform per Byte bit-reversal */
-    crc_set_reverse_input(CRC_CR_REV_IN_BYTE);
-    /* No reversal for output, as hardware only can reverse the entire word */
-    crc_reverse_output_disable(); 
+    crc_reset();                                // Resets to default CRC-32 polynomial (ethernet)
+    crc_set_initial(0xFFFFFFFF);                // Set initial value to 0xFFFFFFFF
+    crc_set_polysize(CRC_CR_POLYSIZE_32);       // Set Polynomial size to 32bit
+    crc_set_polynomial(CRC_POL_DEFAULT);        // Set Polynomial to default CRC-32 Ethernet
+    crc_set_reverse_input(CRC_CR_REV_IN_BYTE);  // For each input, perform per Byte bit-reversal
+    crc_reverse_output_disable();               // No reversal for output (hw only support word reverse)
 
     uint32_t rem = length % 4;
     uint32_t full_32_bit = length / 4;
@@ -69,7 +79,7 @@ uint32_t crcif_compute32(uint8_t* data, uint32_t length) {
         i++;
     }
 
-    // Calculate for less than 4bytes of data
+    /* Calculate for less than 4bytes of data */
     for (uint8_t j = 0; j < rem; j++) {
         uint8_t temp_data = data[4*i + j];
         CRC_DR8 = temp_data;
@@ -88,6 +98,10 @@ uint32_t crcif_compute32(uint8_t* data, uint32_t length) {
     return wordRes ^ 0xFFFFFFFF;
 }
 
+/**
+ * @brief Reverse bits in a byte
+ * 
+ */
 static uint8_t crcif_reverseBit(uint8_t byte) {
     byte = (byte & 0x55) << 1 | (byte & 0xAA) >> 1;
     byte = (byte & 0x33) << 2 | (byte & 0xCC) >> 2;
