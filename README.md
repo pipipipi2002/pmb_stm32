@@ -39,7 +39,7 @@ make
 # Flashing Instructions
 Since this is a Single Bank system, with Bootloader and Main application residing in the memory region, we need to first flash the bootloader through the SWD port using a debugger, and then use the bootloader to flash the main application.
 
-For this release, you will be unable to flash the firmware together with the bootloader. Only the bootloader can be flashed through SWD, and the main application flashed through bootloader.
+Currently, It is not possible to flash the firmware together with the bootloader. The bootloader only can be flashed through SWD, and the main application flashed through bootloader.
 
 ## Flashing Bootloader
 1. Go to the bootloader directory and build the bootloader binary.
