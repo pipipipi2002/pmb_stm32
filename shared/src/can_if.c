@@ -23,10 +23,11 @@ static uint8_t rxBootDataBuffer[BOOT_DATA_MSG_QUEUE_BUFFER_SIZE];
 static cqueue_ts cq_rxCanBootData = {0};
 
 #elif defined (MAINAPP)
-#define VEH_MSG_QUEUE_BUFFER_SIZE               (32)
+#include "can_defines.h"
+#define APP_MSG_QUEUE_BUFFER_SIZE               (32)
 
-static uint8_t rxVehBuffer[VEH_MSG_QUEUE_BUFFER_SIZE];
-static cqueue_ts cq_rxCanVehMsg = {0};
+static uint8_t rxAppBuffer[APP_MSG_QUEUE_BUFFER_SIZE];
+static cqueue_ts cq_rxCanAppMsg = {0};
 
 #endif // Variant Switch
 
@@ -55,7 +56,7 @@ bool canif_setup(void) {
     cqueue_init(&cq_rxCanBootServer, rxBootServerBuffer, BOOT_SERVER_MSG_QUEUE_BUFFER_SIZE);
     cqueue_init(&cq_rxCanBootData, rxBootDataBuffer, BOOT_DATA_MSG_QUEUE_BUFFER_SIZE);
     #elif defined (MAINAPP)
-    cqueue_init(&cq_rxCanVehMsg, rxVehBuffer, VEH_MSG_QUEUE_BUFFER_SIZE);
+    cqueue_init(&cq_rxCanAppMsg, rxAppBuffer, APP_MSG_QUEUE_BUFFER_SIZE);
     #endif // Variant Switch
 
     /* Initialise CAN GPIO ports */
@@ -89,11 +90,6 @@ bool canif_setup(void) {
         log_pError("CAN init failed");
         return false;
     }
-    
-    /* Enable Interrupt on CAN RX */
-    can_enable_irq(CAN1, CAN_IER_FMPIE0 | CAN_IER_FMPIE1);
-    nvic_enable_irq(NVIC_CEC_CAN_IRQ);
-
 
 #if defined (MAINAPP)
 	/* ID 0 ~ 15 goes to FIFO0
@@ -113,7 +109,7 @@ bool canif_setup(void) {
 	 * only 16~ will go here
 	 */
     const uint16_t id2 = 0;
-    const uint16_t mask2 = (0b11111111 << 5);
+    const uint16_t mask2 = (0 << 5);
 
 #elif defined (BOOTLOADER) 
     /* ID 40-43 goes to FIFO0
@@ -137,6 +133,10 @@ bool canif_setup(void) {
 
     can_filter_id_mask_16bit_init(1, id1, mask1, id1, mask1, 0, true); // FIFO0
     can_filter_id_mask_16bit_init(2, id2, mask2, id2, mask2, 1, true); // FIFO1
+    
+    /* Enable Interrupt on CAN RX */
+    can_enable_irq(CAN1, CAN_IER_FMPIE0 | CAN_IER_FMPIE1);
+    nvic_enable_irq(NVIC_CEC_CAN_IRQ);
 
     log_pSuccess("CAN Init Sucessful");
     return true;
@@ -201,9 +201,9 @@ static void canif_receive(uint8_t fifo) {
                 rxFrame.data,
                 &ts);
 
-    #if defined (BOOTLOADER)
     switch (rxFrame.id) {
         uint8_t recv;
+    #if defined (BOOTLOADER)
         case CAN_ID_BOOTLOADER:
             recv = cqueue_pushn(&cq_rxCanBootServer, rxFrame.data, rxFrame.len);
             if (recv != rxFrame.len) {
@@ -216,16 +216,17 @@ static void canif_receive(uint8_t fifo) {
                 log_pError("CAN Queue Full, dropped %d msgs.", rxFrame.len - recv);
             }
             break;
+    #elif defined (MAINAPP)
+        case BB_CAN_ID_BOOT_INFO:
+            recv = cqueue_pushn(&cq_rxCanAppMsg, rxFrame.data, rxFrame.len);
+            if (recv != rxFrame.len) {
+                log_pError("CAN Queue Full, dropped %d msgs.", rxFrame.len - recv);
+            } break;
+    #endif // Variant Switch
         default:
             log_pError("Invalid CAN ID received: %d", rxFrame.id);
             break;
     }
-    #elif defined (MAINAPP)
-    uint8_t recv = cqueue_pushn(&cq_rxCanVehMsg, rxFrame.data, rxFrame.len);
-    if (recv != rxFrame.len) {
-        log_pError("CAN Queue Full, dropped %d msgs.", rxFrame.len - recv);
-    }
-    #endif // Variant Switch
 }
 
 /**
@@ -233,12 +234,28 @@ static void canif_receive(uint8_t fifo) {
  * 
  * @return true if Data is ready, false otherwise
  */
-bool canif_getRxDataReady(void) {
+bool canif_getRxDataReady(const uint8_t id) {
+    switch (id) {
     #if defined (BOOTLOADER)
-    return !cqueue_isEmpty(&cq_rxCanBootServer);
+        case CAN_ID_BOOTLOADER: {
+            return !cqueue_isEmpty(&cq_rxCanBootServer);
+        } break;
+
+        case CAN_ID_BOOTLOADER_DATA: {
+            return !cqueue_isEmpty(&cq_rxCanBootData);
+        } break;
+
     #elif defined (MAINAPP)
-    return !cqueue_isEmpty(&cq_rxCanVehMsg);
+        case BB_CAN_ID_BOOT_INFO: {
+            return !cqueue_isEmpty(&cq_rxCanAppMsg);
+        } break;
+
     #endif // Variant Switch
+        default: {
+            log_pError("Invalid CAN ID: %d", id);
+        } break;
+    }
+    return false;
 }
 
 /**
@@ -262,12 +279,15 @@ bool canif_getRxData(const uint8_t id, uint8_t* data) {
             }
         } break;
     #elif defined (MAINAPP)
-        default: {
-            if (cqueue_pop(&cq_rxCanVehMsg, data)) {
+        case BB_CAN_ID_BOOT_INFO: {
+            if (cqueue_pop(&cq_rxCanAppMsg, data)) {
                 return true;
             }
         } break;
     #endif // Variant Switch
+        default: {
+            log_pError("Invalid CAN ID: %d", id);
+        }
     }
     
     log_pError("Queue Empty");
@@ -291,10 +311,13 @@ uint8_t* canif_getQueuePointer(const uint8_t id) {
             return rxBootDataBuffer;
         } break;
     #elif defined (MAINAPP)
-        default: {
-            return rxVehBuffer;
+        case BB_CAN_ID_BOOT_INFO: {
+            return rxAppBuffer;
         } break;
     #endif // Variant Switch
+        default: {
+            log_pError("Invalid CAN ID: %d", id);
+        } break;
     }
 
     return 0;
@@ -317,7 +340,7 @@ void canif_clearQueue(const uint8_t id) {
         } break;
     #elif defined (MAINAPP)
         default: {
-            cqueue_reset(&cq_rxCanVehMsg);
+            cqueue_reset(&cq_rxCanAppMsg);
         } break;
     #endif // Variant Switch
     }

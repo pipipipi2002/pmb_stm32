@@ -36,6 +36,9 @@
 #define BB_CAN_ID_ERR_PMB_2                 (35)
 #define BB_CAN_ID_ERR_SBCCAN                (36)
 
+#define BB_CAN_ID_BOOT_INFO                 (42)
+    #define BOOT_INFO_REQ_MSG               (0xC0DEDA1A)
+
 /*
  * Heartbeat IDs
  */

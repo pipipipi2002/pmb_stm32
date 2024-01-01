@@ -265,23 +265,28 @@ async def main(log: logging.Logger):
         bin_file = f.read()
         f.close()
 
-    fw_bin_main_app:bytes = bin_file[BOOTLOADER_SIZE+METADATA_SIZE:]
+    fw_bin_main_app:bytearray = bytearray(bin_file[BOOTLOADER_SIZE+METADATA_SIZE:])
     log.info("Removed bootloader partition")
 
-    fw_device_id:int = int.from_bytes(fw_bin_main_app[FIRMWARE_DEVID_OFFSET:FIRMWARE_DEVID_OFFSET+4], "little")
+    fw_device_id:int = int.from_bytes(fw_bin_main_app[FIRMWARE_INFO_OFFSET:FIRMWARE_INFO_OFFSET+4], "little")
     log.info(f"Firmare device id: {hex(fw_device_id)}")
 
     fw_length:int = len(fw_bin_main_app)    
     log.info(f"Firmware Length: {fw_length}")
 
-    fw_crc32_le:bytes = computeCrc32(fw_bin_main_app)
-    fw_crc = int.from_bytes(fw_crc32_le, "little");
-    log.info(f"Firmware CRC-32: {hex(fw_crc)}")
-
     repo = git.Repo(search_parent_directories=True)
     commit_sha = repo.head.object.hexsha
     fw_version:int = int(commit_sha[:8], 16)
     log.info(f"Firmware version: {hex(fw_version)}")
+
+    fw_version_ba:bytearray = bytearray(fw_version.to_bytes(4, "little"))
+    for i in range(4):
+        fw_bin_main_app[FIRMWARE_INFO_COMMIT_OFFSET+i] = fw_version_ba[i]
+    log.info("Inject version to Firmware")
+
+    fw_crc32_le:bytes = computeCrc32(fw_bin_main_app)
+    fw_crc = int.from_bytes(fw_crc32_le, "little")
+    log.info(f"Firmware CRC-32: {hex(fw_crc)}")
 
     with can.Bus(interface='canine', bitrate=1000000) as bus:
         reader = can.BufferedReader()
@@ -349,7 +354,7 @@ async def main(log: logging.Logger):
 
             # Check length to send
             lenToSend = BL_FW_DATA_SEG_SIZE if (bytesSent +  BL_FW_DATA_SEG_SIZE <= fw_length) else (fw_length - bytesSent)
-            fwDataSegment = bytearray(fw_bin_main_app[bytesSent: bytesSent + lenToSend])
+            fwDataSegment = fw_bin_main_app[bytesSent: bytesSent + lenToSend]
             
             # Send FW data to DATA ID
             log.info("Sending data over...")

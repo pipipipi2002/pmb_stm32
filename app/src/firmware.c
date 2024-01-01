@@ -28,13 +28,21 @@
     #error "MAINAPP OPTION NOT SELECTED"
 #endif
 
+typedef struct {
+    uint32_t device_id;         
+    uint32_t commit_id;         // Inserted by updator firmware
+} fw_info_ts;
+
 /*
  * Global Variables 
  */
 // Interrupt Vector Table in SRAM 
 volatile uint32_t vectorTable[48] __attribute__((section(".ramvectortable")));
 // Dev ID to be stored in flash
-__attribute__((section(".dev_id"))) volatile uint32_t device_id = DEVICE_ID;
+__attribute__((section(".fw_info"))) volatile fw_info_ts fw_info = {
+    .device_id = DEVICE_ID,
+    .commit_id = 0xFFFFFFFF
+};
 
 // Telemetry Data
 static uint16_t batt_voltage = 0;
@@ -43,6 +51,7 @@ static uint16_t batt_status = 0;
 static char batt_state[15] = "";
 static float board_temperature = 0;
 static float board_pressure = 0;
+static uint8_t incomingCanData[8] = {0};
 
 // Timer for "cyclic functions"
 static timeout_ts updateTimer;
@@ -63,6 +72,7 @@ static void vector_setup(void);
 static void setup(void);
 static float getPressure(void);
 static void poweroff(void);
+static void sendFwInfo(void);
 static void encodeCanMsgBattStat(void);
 static void encodeCanMsgBoardStat(void);
 static void displayOnMessage(void);
@@ -97,9 +107,10 @@ int main(void) {
 
     setup();
 
-    log_pInfo("Entered Application");
-    log_pInfo("Power Monitoring Board AUV4");
-    log_pInfo("PMB Number: %d", PMB_ID);
+    $SUCCESS("Entered Application");
+    $SUCCESS("Power Monitoring Board AUV4");
+    $SUCCESS("PMB Number: %d", PMB_ID);
+    sendFwInfo();
 
     displayOnMessage();
 
@@ -107,27 +118,27 @@ int main(void) {
     gpio_clear(PMB_RELAY_OFF_PORT, PMB_RELAY_OFF_PIN);      // Latch pwoer to PMB 
     // TODO Do some verification before supplying power to vehicle
     gpio_set(PMB_PMOS_ON_GPIO_PORT, PMB_PMOS_ON_GPIO_PIN);  // Power to Vehicle
-    log_pSuccess("PMOS ON, Battery connected to Vehicle");
+    $SUCCESS("PMOS ON, Battery connected to Vehicle");
 
 #if (PMB_PERFORM_CALIBRATION == 1)
-    log_pInfo("Starting PMB BQ Calibration");
+    $SUCCESS("Starting PMB BQ Calibration");
     BQ_Init();
     BQ_CalibrateVoltage(PMB_CALIBRATION_VOLTAGE);
     BQ_CalibrateCurrent(PMB_CALIBRATION_CURRENT / PMB_CURRENT_SCALE);
-    log_pSuccess("Completed PMB BQ Calibration");
+    $SUCCESS("Completed PMB BQ Calibration");
 #endif // PMB_PERFORM_CALIBRATION
 
     while (true) {
         /* Check for off reed switch activation */
         if (gpio_get(PMB_REED_OFF_PORT, PMB_REED_OFF_PIN)) {
-            log_pSuccess("Shutdown Sequence Activated");
+            $SUCCESS("Shutdown Sequence Activated");
             poweroff();
             while (1); // Will not reach here
         }
 
         /* Update PMB and Battery Stats */
         if (timeout_hasElapsed(&updateTimer)) {
-            log_pInfo("Updating internal data");
+            $INFO("Updating internal data");
             batt_status = BQ_GetBattStatus();
             batt_current = BQ_GetCurrent() * PMB_CURRENT_SCALE;
             batt_current = (batt_current < 0) ? -1 * batt_current : batt_current;
@@ -138,7 +149,7 @@ int main(void) {
 
         /* Send Battery Stats via CAN */
         if (timeout_hasElapsed(&CAN_BattTimer)) {
-            log_pInfo("Sending Battery Statistics via CAN");
+            $INFO("Sending Battery Statistics via CAN");
 
             encodeCanMsgBattStat();
             canif_sendVehMsg(&canBattMsg, BB_CAN_STD_MSG_SIZE, BB_CAN_ID_BATT_STAT);
@@ -146,7 +157,7 @@ int main(void) {
 
         /* Send Board Stats via CAN */
         if (timeout_hasElapsed(&CAN_BoardTimer)) {
-            log_pInfo("Sending Board Statistics via CAN");
+            $INFO("Sending Board Statistics via CAN");
 
             encodeCanMsgBoardStat();
             canif_sendVehMsg(&canBoardMsg, BB_CAN_STD_MSG_SIZE, BB_CAN_ID_PMB_STAT);
@@ -154,13 +165,29 @@ int main(void) {
         
         /* Send Heartbeat via CAN */
         if (timeout_hasElapsed(&CAN_HbTimer)) {
-            log_pInfo("Sending Heartbeat via CAN");
+            $INFO("Sending Heartbeat via CAN");
             canif_sendVehMsg(&canHbMsg, BB_CAN_HB_MSG_SIZE, BB_CAN_ID_HEARTBEAT);
         }
 
         /* Update Display */
         if(timeout_hasElapsed(&displayTimer)) {
             displayDataMessage();
+        }
+
+        /* Check for incoming can message */
+        if (canif_getRxDataReady(BB_CAN_ID_BOOT_INFO)) {
+            uint8_t i;
+            for (i = 0; i < 4; i++) {
+                if (!canif_getRxData(BB_CAN_ID_BOOT_INFO, &incomingCanData[i])) {
+                    break;
+                }
+            }
+            if (i == 4) {
+                uint32_t res = incomingCanData[0] | (incomingCanData[1] << 8) | (incomingCanData[2] << 16) | (incomingCanData[3] << 24);
+                if (res == BOOT_INFO_REQ_MSG) {
+                    sendFwInfo();
+                }
+            }
         }
     }
     return 0;
@@ -182,7 +209,7 @@ static void setup(void) {
     timeout_setup(&CAN_HbTimer,  PMB_CAN_HB_MSG_INTVL, true);
     timeout_setup(&displayTimer,  PMB_OLED_REFRESH_INTVL, true);
     
-    log_pSuccess("Setup Completed");
+    $SUCCESS("Setup Completed");
 }
 
 /**
@@ -221,6 +248,15 @@ static void setState(uint16_t status) {
 	else {
 		snprintf(batt_state, sizeof(batt_state), "UNKNOWN");
 	}
+}
+
+/**
+ * @brief Send Firmware Information through CAN
+ * 
+ */
+static void sendFwInfo(void) {
+    $SUCCESS("Sending FW info");
+    canif_sendData((uint8_t *)&fw_info, 8, BB_CAN_ID_BOOT_INFO);
 }
 
 /**

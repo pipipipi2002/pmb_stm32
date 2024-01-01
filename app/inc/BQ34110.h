@@ -8,7 +8,8 @@
 #include "system.h"			// Systick`
 #include "log.h"			
 
-#if defined (DISABLE_PRINT)
+#ifndef FIRMWARE_DISABLE_DEBUG
+#if defined (BQ_DISABLE_DEBUG)
 	#define $INFO(fmt, ...)
 	#define $ERROR(fmt, ...) 
 	#define $SUCCESS(fmt, ...) 
@@ -22,6 +23,7 @@
 	#define $ERROR(fmt, ...) printf(fmt, ##__VA_ARGS__)
 	#define $SUCCESS(fmt, ...) printf(fmt, ##__VA_ARGS__)
 #endif // USE_LOGGER
+#endif
 
 #define BQ_BATT_CAPACITY			(15000UL)		// mAH capacity
 #define BQ_NO_OF_CELL				(4UL)			// Battery Cell Count

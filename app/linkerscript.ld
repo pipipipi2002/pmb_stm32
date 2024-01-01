@@ -42,7 +42,7 @@ SECTIONS
 
 		*(.vectors)	            /* Vector table */
 		. = ALIGN(16);
-		KEEP(*(.dev_id))		/* Device Id */
+		KEEP(*(.fw_info))		/* Firmware Info */
 		. = ALIGN(4);
 		*(.text*)	            /* Program code */
 		. = ALIGN(4);
