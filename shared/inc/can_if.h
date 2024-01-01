@@ -48,7 +48,7 @@ typedef union {
 bool canif_setup(void);
 int8_t canif_sendVehMsg (canMsg_tu* msg, uint8_t size, uint32_t msgId);
 uint8_t canif_sendData (uint8_t* data, uint8_t size, uint32_t id);
-bool canif_getRxDataReady(void);
+bool canif_getRxDataReady(const uint8_t id);
 bool canif_getRxData(const uint8_t id, uint8_t* data);
 uint8_t* canif_getQueuePointer(const uint8_t id);
 void canif_clearQueue(const uint8_t id);

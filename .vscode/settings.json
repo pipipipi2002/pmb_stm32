@@ -45,7 +45,9 @@
         "utility": "c",
         "variant": "c",
         "flash_if.h": "c",
-        "metadata.h": "c"
+        "metadata.h": "c",
+        "mainapp_defines.h": "c",
+        "i2c_if.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/bin/"

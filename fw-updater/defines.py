@@ -1,9 +1,9 @@
-CAN_HEARTBEAT_ID                = 4
+CAN_BOOTLOADER_ID               = 40
+CAN_BOOTLOADER_DATA_ID          = 41
+CAN_HEARTBEAT_ID                = CAN_BOOTLOADER_DATA_ID
 CAN_PMB1_HEARTBEAT_ID           = 7
 CAN_PMB2_HEARTBEAT_ID           = 8
 
-CAN_BOOTLOADER_ID               = 40
-CAN_BOOTLOADER_DATA_ID          = 41
 
 PACKET_LENTYPE_SIZE             = 1
 PACKET_DATA_SIZE                = 6
@@ -36,8 +36,9 @@ BOOTLOADER_SIZE                 = 30 * 1024
 METADATA_SIZE                   = 2 * 1024
 FIRMWARE_SIZE                   = 96 * 1024
 BL_FW_DATA_SEG_SIZE             = 1024
-FIRMWARE_DEVID_OFFSET           = 0xc0
-FIRMWARE_DEVID_SIZE             = 4 
+FIRMWARE_INFO_OFFSET            = 0xc0
+FIRMWARE_INFO_SIZE              = 8
+FIRMWARE_INFO_COMMIT_OFFSET     = FIRMWARE_INFO_OFFSET + 4
 
 FW_FILE                         = "../app/firmware.bin"
 SLEEP_TIME                      = 0.001       # interval between can frames

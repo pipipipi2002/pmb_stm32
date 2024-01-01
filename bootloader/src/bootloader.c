@@ -41,7 +41,7 @@ typedef enum {
  *      If calculated crc is not equal to stored crc, the meta data will be 
  *      cleared and sentinel set to NOTOK. 
  */
-__attribute__((section (".fw_meta"))) fwMeta_ts appMetaData = {
+__attribute__((section (".fw_meta"))) volatile fwMeta_ts appMetaData = {
     .sentinel = FW_SENTINEL_NOTOK,      // Validity (values are kept in boot)
     .device_id = DEVICE_ID,             // Device ID (values are kept in boot)
     .version = 0xFFFFFFFF,              // git commit version -> FROM SERVER
@@ -117,7 +117,7 @@ int main (void) {
                 }
                 /* Send Heartbeat */
                 if (timeout_hasElapsed(&canHbTime) == true) {
-                    canif_sendVehMsg(&canHbMsg, BB_CAN_HB_MSG_SIZE, BB_CAN_ID_HEARTBEAT);
+                    canif_sendVehMsg(&canHbMsg, BB_CAN_HB_MSG_SIZE, CAN_ID_BOOTLOADER_DATA);
                 }
             } break;
             case BL_DEVID_STATE: {
@@ -340,14 +340,16 @@ static bool validateApplication(void) {
         return false;
     }
 
-    log_pSuccess("Main App CRC OK");
-    log_pInfo("Using version: 0x%X", appMetaData.version);
+    log_pSuccess("Main App Validation OK");
+    log_pSuccess("Using version: 0x%X", appMetaData.version);
     return true;
 }
 
 static void jumpToApplication(void) {
     /* Validate App */
     if (!validateApplication()) return;
+
+    log_pSuccess("Jump to Application");
 
     /* Teardown */
     destruct();

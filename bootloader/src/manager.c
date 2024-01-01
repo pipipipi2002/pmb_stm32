@@ -43,7 +43,7 @@ void man_setup(void) {
  * 
  */
 void man_update(void) {
-    while (canif_getRxDataReady()) {
+    while (canif_getRxDataReady(CAN_ID_BOOTLOADER)) {
         switch(state) {
             case MAN_STATE_LENGTHTYPE: {
                 /* Get Length+Type Byte */

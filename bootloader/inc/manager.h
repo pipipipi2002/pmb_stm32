@@ -2,6 +2,7 @@
 #define INC_MANAGER_H
 
 #include "common_defines.h"
+#include "log.h"
 
 #define MAN_DISABLE_DEBUG
 

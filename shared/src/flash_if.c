@@ -23,7 +23,6 @@ void flashif_eraseMainApplication() {
 void flashif_eraseAppMetaData(void) {
     flash_unlock();
     flash_erase_page(AMD_START_ADDR);
-    flash_program_word(AMD_START_ADDR, FW_SENTINEL_NOTOK);
     flash_lock();
 }
 
