@@ -2,18 +2,20 @@
 #define INC_BOOTLOADER_DEFINES_H
 
 #include "common_defines.h"
-#include "board_def.h"
+#include "board_defines.h"
 
 #if !defined (DEVICE_ID)
-    #error "Firmware ID not defined"
+    #error "Device ID not defined"
 #endif // FW_DEVICE_ID
+
+#define MASTER_TIMEOUT                  (3000U)
+#define CAN_HB_TIMEOUT                  (1000U)
 
 #define CAN_ID_BOOTLOADER               (40U)
 #define CAN_ID_BOOTLOADER_DATA          (41U)
 
 /* 4-Byte Msg definition for the flash state machine */
-// REQ: Server -> PMB
-// RES: PMB -> Server
+// REQ: Server -> PMB; RES: PMB -> Server
 
 #define BL_FUR_REQ_PACKET               (0xCA)
 #define BL_FUR_ACK_RES_PACKET           (0xBD)

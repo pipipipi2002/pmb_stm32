@@ -2,7 +2,7 @@
 #define INC_METADATA_H
 
 #include "common_defines.h"
-#include "board_def.h"
+#include "board_defines.h"
 
 #define FW_SENTINEL_OK            (0x6C0FFEE9)
 #define FW_SENTINEL_NOTOK         (0xDEADBEEF)

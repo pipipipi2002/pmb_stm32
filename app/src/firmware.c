@@ -8,7 +8,8 @@
 // Shared Header Files
 #include "common_defines.h"
 #include "can_defines.h"
-#include "board_def.h"
+#include "board_defines.h"
+#include "mainapp_defines.h"
 #include "system.h"
 #include "uart_if.h"
 #include "log.h"

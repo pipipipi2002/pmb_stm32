@@ -1,25 +1,21 @@
-#ifndef INC_BOARD_DEF_H
-#define INC_BOARD_DEF_H
+#ifndef INC_BOARD_DEFINES_H
+#define INC_BOARD_DEFINES_H
 
 #include "common_defines.h"
+#include "can_defines.h"
+
 //
 // Software Configurations
 //
 #define DEVICE_ID                  (0xBEEF6969)
 
 #define PMB_ID                     (5)
+#define PMB_UART_BAUDRATE          (115200)
+
 #define PMB_CURRENT_SCALE          (2)
 #define PMB_MAX_CURR               (80)
 #define PMB_SHUNT_RES              (1)         //mOhm
 #define PMB_ARR_SIZE               (10)
-
-#define PMB_CAN_HB_MSG_INTVL       (500)
-#define PMB_CAN_BATT_MSG_INTVL     (200)
-#define PMB_CAN_BOARD_MSG_INTVL    (1000)
-#define PMB_OLED_REFRESH_INTVL     (500)
-#define PMB_STATUS_UPDATE_INTVL    (50)        // Internal Data Update
-
-#define PMB_UART_BAUDRATE          (115200)
 
 #if (PMB_ID % 2 == 1) 
     #define BB_CAN_ID_BATT_STAT     (BB_CAN_ID_BATT_1_STAT)
@@ -30,13 +26,6 @@
     #define BB_CAN_ID_PMB_STAT      (BB_CAN_ID_PMB_2_STAT)
     #define BB_HEARTBEAT_ID_PMB     (BB_HEARTBEAT_ID_PMB_2)
 #endif // PMB_ID
-
-// 
-// BQ calibration
-// 
-#define PMB_PERFORM_CALIBRATION         (0)
-#define PMB_CALIBRATION_VOLTAGE         (16000)
-#define PMB_CALIBRATION_CURRENT         (3000)
 
 // 
 // Hardware Configurations
@@ -90,4 +79,4 @@
 #define SSD1306_Reset_Pin           (PMB_DISPLAY_RESET_PIN)
 #define SSD1306_INCLUDE_FONT_6x8    (1)
 
-#endif // INC_BOARD_DEF_H 
+#endif // INC_BOARD_DEFINES_H 

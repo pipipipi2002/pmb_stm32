@@ -173,10 +173,23 @@ bool man_packetBufferFull(void) {
     return (packetBufferLength == PACKET_BUFFER_LENGTH);
 }
 
+/**
+ * @brief Create Single Byte Normal Packet with 1 byte payload
+ * 
+ * @param packet Pointer to packet
+ * @param type DATA0 byte
+ */
 void man_createBLPacketSingle(man_packet_ts* packet, uint8_t type) {
     createSingleBytePacket(packet, type, PACKET_TYPE_NORMAL_DATA);
 }
 
+/**
+ * @brief Check Singel Byte Normal Packet with 1 byte payload and verify payload
+ * 
+ * @param packet pointer to packet
+ * @param type type expected
+ * @return true if packet DATA0 == type
+ */
 bool man_isBLPacketSingle(const man_packet_ts* packet, const uint8_t type) {
     /* Check packet is a byte */
     if (packet->lenType >> 2 != 1) {
@@ -189,6 +202,13 @@ bool man_isBLPacketSingle(const man_packet_ts* packet, const uint8_t type) {
     return true;
 }
 
+/**
+ * @brief Create 5 Byte Payload Normal Packet. DATA0: Type, DATA1,2,3,4: data
+ * 
+ * @param packet Pointer to packet
+ * @param type Payload type
+ * @param data Payload data
+ */
 void man_createBLPacketData(man_packet_ts* packet, uint8_t type, uint32_t data) {
     memset(packet, 0xFF, sizeof(man_packet_ts));
     packet->lenType = PACKET_CONSTRUCT_LENGTHTYPE(5, PACKET_TYPE_NORMAL_DATA);
@@ -200,6 +220,14 @@ void man_createBLPacketData(man_packet_ts* packet, uint8_t type, uint32_t data) 
     packet->crc = crcif_compute8((uint8_t *) packet, (PACKET_TOTAL_SIZE - PACKET_CRC_SIZE));
 }
 
+/**
+ * @brief Check 5 Byte Payload Normal Packet. 
+ * 
+ * @param packet Pointer to packet
+ * @param type Payload type expected
+ * @param dataCompare Payload data expected
+ * @return true if type and data is expected
+ */
 bool man_isBLPacketData(const man_packet_ts* packet, const uint8_t type, const uint32_t dataCompare) {
     /* Check Length */
     if (packet->lenType >> 2 != 5) {
@@ -242,6 +270,13 @@ static bool isUtilityPacket(const man_packet_ts* packet, const uint8_t data) {
     return true;
 }
 
+/**
+ * @brief Create a Single Byte Packet 
+ * 
+ * @param packet Pointer to the packet
+ * @param data Data0 
+ * @param packet_type NORMAL OR UTILITY 
+ */
 static void createSingleBytePacket(man_packet_ts* packet, uint8_t data, uint8_t packet_type) {
     memset(packet, 0xFF, sizeof(man_packet_ts));
     packet->lenType = PACKET_CONSTRUCT_LENGTHTYPE(1, packet_type);
@@ -249,6 +284,12 @@ static void createSingleBytePacket(man_packet_ts* packet, uint8_t data, uint8_t 
     packet->crc = crcif_compute8((uint8_t *) packet, (PACKET_TOTAL_SIZE - PACKET_CRC_SIZE));
 }
 
+/**
+ * @brief Create a Utility Packet object
+ * 
+ * @param packet Pointer to the packet
+ * @param data Utility Type
+ */
 static void createUtilityPacket(man_packet_ts* packet, uint8_t data) {
     createSingleBytePacket(packet, data, PACKET_TYPE_UTILITY);
 }

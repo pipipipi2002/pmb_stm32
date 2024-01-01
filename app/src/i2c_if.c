@@ -2,7 +2,7 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/i2c.h>
 
-#include "board_def.h"
+#include "board_defines.h"
 #include "log.h"
 
 #include "i2c_if.h"

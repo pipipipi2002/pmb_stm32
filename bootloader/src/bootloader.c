@@ -1,13 +1,11 @@
 // Libopencm3 Header Files
 #include <libopencm3/stm32/gpio.h>
 
-#include <assert.h>
-
 // Shared Header Files
 #include "common_defines.h"
 #include "metadata.h"
 #include "bootloader_defines.h"
-#include "board_def.h"
+#include "board_defines.h"
 #include "system.h"
 #include "log.h"
 #include "manager.h"
@@ -20,9 +18,6 @@
 #ifndef BOOTLOADER
     #error "BOOTLOADER OPTION NOT SELECTED"
 #endif
-
-#define MASTER_TIMEOUT          (3000U)
-#define CAN_HB_TIMEOUT          (1000U)
 
 typedef enum {
     BL_FUR_STATE,
@@ -53,18 +48,17 @@ __attribute__((section (".fw_meta"))) fwMeta_ts appMetaData = {
     .length = 0xFFFFFFFF,               // Firmware Length -> FROM SERVER
     .crc32 = 0xFFFFFFFF,                // CRC-32 of the firmware -> FROM SERVER
 };
-
-static bl_state_te state = BL_FUR_STATE;
 static uint32_t fwLength = 0;
 static uint32_t fwBytesWritten = 0;
 static uint32_t fwCRC = 0;
 static uint32_t fwVersion = 0;
+static bl_state_te state = BL_FUR_STATE;
 static man_packet_ts packet_tx, packet_rx;
 static canMsg_tu canHbMsg = {.heartbeatId = BB_HEARTBEAT_ID_PMB};
-
 static timeout_ts masterTime, canHbTime;
+
 /*
- * Internal Function Declarations
+ * Internal (static) Function Declarations
  */
 int main (void);
 static void setup(void);

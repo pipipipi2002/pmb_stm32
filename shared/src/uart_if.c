@@ -3,7 +3,7 @@
 #include <libopencm3/stm32/gpio.h>
 #include <printf.h>
 
-#include "board_def.h"
+#include "board_defines.h"
 #include "uart_if.h"
 
 bool uart1if_setup(void) {
