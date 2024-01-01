@@ -1,17 +1,16 @@
-# Todo list
+# Features
+This firmware includes the functionality provided by the code ported over from BBAS. Telemetry includes
+- Voltage 
+- Current
+- Pressure
+- Temperature
+- Heartbeat
 
-- Setup basic peripheral (DONE)
-    - UART for FTDI output (DONE)
-    - Clock config (DONE)
-    - GPIO (DONE)
-    - I2C (DONE)
-    - CAN (DONE)
-- ADS Library Cleanup (DONE)
-- Port BQ library (DONE)
-- Port Display library (DONE)
-- Complete CAN library (DONE)
-- Main Functionality (DONE)
+Moreover, it is able to respond to Firmware Information request through CAN with the following frame
+- ID: 42
+- DATA0: 26; DATA1: 218; DATA2: 333; DATA3: 192
 
-## Advanced Features
-- RTOS
-- LGVL
+It will respond with a CAN frame:
+- ID: 42
+- DATA0-4: uint32_t DEVICE_ID (little endian)
+- DATA5-8: uint32_t COMMIT_VERSION (little endian)
