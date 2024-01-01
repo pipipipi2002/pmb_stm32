@@ -20,11 +20,11 @@ Moreover, this script extracts and injects information into the firmware binary.
 - Extracts the device ID from a fixed region (through memory address). The device ID extracted will be used to validate the correct bootloader it is communicating with.
 - Injects the commit hash (truncated to 32-bit) of the current commit
 
-## CAN Terminal - `CanTerm.py`
+## CAN Terminal - `canTerm.py`
 - Able to monitor and send can data. 
-- Edit the `CanTerm.py` script to adjust the filter and mask (line 54).
+- Edit the `canTerm.py` script to adjust the filter and mask (line 54).
 
 Running it
 ```Python
-python CanTerm.py
+python canTerm.py
 ```

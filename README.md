@@ -44,7 +44,7 @@ For this release, you will be unable to flash the firmware together with the boo
 ## Flashing Bootloader
 1. Go to the bootloader directory and build the bootloader binary.
 ```bash
-~/pmb_stm32/bootloader $ make clean && make 
+~/bootloader$ make clean && make 
 ```
 2. Connect the debugger to the board and power the board.
 3. On the Debug page of VS-Code, select "Debug Bootloader" and click play button.
@@ -54,13 +54,13 @@ For this release, you will be unable to flash the firmware together with the boo
 ## Flashing Main Application 
 1. Go to the app directory and build the firmware binary.
 ```bash
-~/pmb_stm32/app $ make clean && make
+~/app$ make clean && make
 ```
 2. Connect the Canine CAN to USB converter to the board and to your PC.
 3. Go to the fw-updator directory, activate conda environment, and run the firmware updator python code. The python code will wait for a heartbeat from the board. 
 ```bash
-~/pmb_stm32/fw-updator $ conda activate can-testing
-~/pmb_stm32/fw-updator $ python main.py
+~/fw-updator$ conda activate can-testing
+~/fw-updator$ python main.py
 ```
 4. Power your board and the firmware will be uploaded and flashed to the board.
 

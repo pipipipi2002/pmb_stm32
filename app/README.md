@@ -12,5 +12,5 @@ Moreover, it is able to respond to Firmware Information request through CAN with
 
 It will respond with a CAN frame:
 - ID: 42
-- DATA0-4: uint32_t DEVICE_ID (little endian)
-- DATA5-8: uint32_t COMMIT_VERSION (little endian)
+- DATA0-3: uint32_t DEVICE_ID (little endian)
+- DATA4-7: uint32_t COMMIT_VERSION (little endian)
